@@ -21,7 +21,7 @@ type config struct {
 
 const (
 	// Default values
-	defaultPort     = "8080"
+	defaultPort     = "7276"
 	defaultDataPath = "/etc/scrobblet"
 
 	// Environment variable keys

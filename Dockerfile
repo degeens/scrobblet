@@ -10,5 +10,5 @@ RUN go build -o /app ./cmd/api
 
 FROM alpine:3.23 AS final
 COPY --from=builder /app /bin/app
-EXPOSE 8080
+EXPOSE 7276
 CMD ["bin/app"]

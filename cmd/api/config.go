@@ -6,9 +6,10 @@ import (
 )
 
 type config struct {
-	port    string
-	spotify spotifyConfig
-	koito   koitoConfig
+	port     string
+	dataPath string
+	spotify  spotifyConfig
+	koito    koitoConfig
 }
 
 type spotifyConfig struct {
@@ -24,10 +25,12 @@ type koitoConfig struct {
 
 const (
 	// Default values
-	defaultPort = "8080"
+	defaultPort     = "8080"
+	defaultDataPath = "/etc/scrobblet"
 
 	// Environment variable keys
 	envPort                = "SCROBBLET_PORT"
+	envDataPath            = "SCROBBLET_DATA_PATH"
 	envSpotifyClientID     = "SPOTIFY_CLIENT_ID"
 	envSpotifyClientSecret = "SPOTIFY_CLIENT_SECRET"
 	envSpotifyRedirectURL  = "SPOTIFY_REDIRECT_URL"
@@ -37,6 +40,7 @@ const (
 
 func loadConfig() (*config, error) {
 	port := getEnv(envPort, defaultPort)
+	dataPath := getEnv(envDataPath, defaultDataPath)
 
 	spotify, err := loadSpotifyConfig()
 	if err != nil {
@@ -49,9 +53,10 @@ func loadConfig() (*config, error) {
 	}
 
 	return &config{
-		port:    port,
-		spotify: spotify,
-		koito:   koito,
+		port:     port,
+		dataPath: dataPath,
+		spotify:  spotify,
+		koito:    koito,
 	}, nil
 }
 

@@ -49,12 +49,7 @@ func (c *Client) refreshTokenIfNeeded() error {
 }
 
 func (c *Client) loadToken() error {
-	tokenFilePath, err := getTokenFilePath()
-	if err != nil {
-		return err
-	}
-
-	data, err := os.ReadFile(tokenFilePath)
+	data, err := os.ReadFile(c.oauth2TokenPath)
 	if err != nil {
 		if errors.Is(err, fs.ErrNotExist) {
 			return nil
@@ -79,24 +74,10 @@ func (c *Client) saveToken() error {
 		return err
 	}
 
-	tokenFilePath, err := getTokenFilePath()
-	if err != nil {
-		return err
-	}
-
-	tokenDir := filepath.Dir(tokenFilePath)
+	tokenDir := filepath.Dir(c.oauth2TokenPath)
 	if err := os.MkdirAll(tokenDir, 0700); err != nil {
 		return err
 	}
 
-	return os.WriteFile(tokenFilePath, data, 0600)
-}
-
-func getTokenFilePath() (string, error) {
-	configDir, err := os.UserConfigDir()
-	if err != nil {
-		return "", err
-	}
-
-	return filepath.Join(configDir, "scrobblet", "spotify_token.json"), nil
+	return os.WriteFile(c.oauth2TokenPath, data, 0600)
 }

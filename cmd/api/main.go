@@ -24,7 +24,7 @@ func main() {
 	}
 	slog.Info("Config loaded")
 
-	spotifyClient := spotify.NewClient(cfg.spotify.clientID, cfg.spotify.clientSecret, cfg.spotify.redirectURL)
+	spotifyClient := spotify.NewClient(cfg.spotify.clientID, cfg.spotify.clientSecret, cfg.spotify.redirectURL, cfg.dataPath)
 	koitoClient := koito.NewClient(cfg.koito.url, cfg.koito.token)
 
 	app := &application{

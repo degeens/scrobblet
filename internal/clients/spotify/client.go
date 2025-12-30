@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"path/filepath"
 	"time"
 
 	"golang.org/x/oauth2"
@@ -16,13 +17,14 @@ const (
 )
 
 type Client struct {
-	baseURL      string
-	httpClient   *http.Client
-	oauth2Config *oauth2.Config
-	oauth2Token  *oauth2.Token
+	baseURL         string
+	httpClient      *http.Client
+	oauth2Config    *oauth2.Config
+	oauth2Token     *oauth2.Token
+	oauth2TokenPath string
 }
 
-func NewClient(clientID, clientSecret, redirectURL string) *Client {
+func NewClient(clientID, clientSecret, redirectURL, dataPath string) *Client {
 	c := &Client{
 		baseURL:    baseURL,
 		httpClient: &http.Client{Timeout: 5 * time.Second},
@@ -36,6 +38,7 @@ func NewClient(clientID, clientSecret, redirectURL string) *Client {
 				TokenURL: tokenURL,
 			},
 		},
+		oauth2TokenPath: filepath.Join(dataPath, "spotify_token.json"),
 	}
 
 	c.loadToken()

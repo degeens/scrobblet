@@ -3,24 +3,20 @@ package main
 import (
 	"fmt"
 	"os"
+
+	"github.com/degeens/scrobblet/internal/clients"
+	"github.com/degeens/scrobblet/internal/clients/koito"
+	"github.com/degeens/scrobblet/internal/clients/spotify"
+	"github.com/degeens/scrobblet/internal/sources"
+	"github.com/degeens/scrobblet/internal/targets"
 )
 
 type config struct {
 	port     string
 	dataPath string
-	spotify  spotifyConfig
-	koito    koitoConfig
-}
-
-type spotifyConfig struct {
-	clientID     string
-	clientSecret string
-	redirectURL  string
-}
-
-type koitoConfig struct {
-	url   string
-	token string
+	source   sources.SourceType
+	target   targets.TargetType
+	clients  clients.Config
 }
 
 const (
@@ -31,6 +27,8 @@ const (
 	// Environment variable keys
 	envPort                = "SCROBBLET_PORT"
 	envDataPath            = "SCROBBLET_DATA_PATH"
+	envSource              = "SCROBBLET_SOURCE"
+	envTarget              = "SCROBBLET_TARGET"
 	envSpotifyClientID     = "SPOTIFY_CLIENT_ID"
 	envSpotifyClientSecret = "SPOTIFY_CLIENT_SECRET"
 	envSpotifyRedirectURL  = "SPOTIFY_REDIRECT_URL"
@@ -42,12 +40,27 @@ func loadConfig() (*config, error) {
 	port := getEnv(envPort, defaultPort)
 	dataPath := getEnv(envDataPath, defaultDataPath)
 
-	spotify, err := loadSpotifyConfig()
+	source, err := getRequiredEnv(envSource)
 	if err != nil {
 		return nil, err
 	}
 
-	koito, err := loadKoitoConfig()
+	sourceType, err := validateSource(source)
+	if err != nil {
+		return nil, err
+	}
+
+	target, err := getRequiredEnv(envTarget)
+	if err != nil {
+		return nil, err
+	}
+
+	targetType, err := validateTarget(target)
+	if err != nil {
+		return nil, err
+	}
+
+	clientsConfig, err := loadClientsConfig(sourceType, targetType, dataPath)
 	if err != nil {
 		return nil, err
 	}
@@ -55,48 +68,75 @@ func loadConfig() (*config, error) {
 	return &config{
 		port:     port,
 		dataPath: dataPath,
-		spotify:  spotify,
-		koito:    koito,
+		source:   sourceType,
+		target:   targetType,
+		clients:  clientsConfig,
 	}, nil
 }
 
-func loadKoitoConfig() (koitoConfig, error) {
-	url, err := getRequiredEnv(envKoitoURL)
-	if err != nil {
-		return koitoConfig{}, err
+func loadClientsConfig(sourceType sources.SourceType, targetType targets.TargetType, dataPath string) (clients.Config, error) {
+	var spotifyConfig spotify.Config
+	var koitoConfig koito.Config
+	var err error
+
+	if sourceType == sources.SourceSpotify {
+		spotifyConfig, err = loadSpotifyConfig(dataPath)
+		if err != nil {
+			return clients.Config{}, err
+		}
 	}
 
-	token, err := getRequiredEnv(envKoitoToken)
-	if err != nil {
-		return koitoConfig{}, err
+	if targetType == targets.TargetKoito {
+		koitoConfig, err = loadKoitoConfig()
+		if err != nil {
+			return clients.Config{}, err
+		}
 	}
 
-	return koitoConfig{
-		url:   url,
-		token: token,
+	return clients.Config{
+		Spotify: spotifyConfig,
+		Koito:   koitoConfig,
 	}, nil
 }
 
-func loadSpotifyConfig() (spotifyConfig, error) {
+func loadSpotifyConfig(dataPath string) (spotify.Config, error) {
 	clientID, err := getRequiredEnv(envSpotifyClientID)
 	if err != nil {
-		return spotifyConfig{}, err
+		return spotify.Config{}, err
 	}
 
 	clientSecret, err := getRequiredEnv(envSpotifyClientSecret)
 	if err != nil {
-		return spotifyConfig{}, err
+		return spotify.Config{}, err
 	}
 
 	redirectURL, err := getRequiredEnv(envSpotifyRedirectURL)
 	if err != nil {
-		return spotifyConfig{}, err
+		return spotify.Config{}, err
 	}
 
-	return spotifyConfig{
-		clientID:     clientID,
-		clientSecret: clientSecret,
-		redirectURL:  redirectURL,
+	return spotify.Config{
+		ClientID:     clientID,
+		ClientSecret: clientSecret,
+		RedirectURL:  redirectURL,
+		DataPath:     dataPath,
+	}, nil
+}
+
+func loadKoitoConfig() (koito.Config, error) {
+	url, err := getRequiredEnv(envKoitoURL)
+	if err != nil {
+		return koito.Config{}, err
+	}
+
+	token, err := getRequiredEnv(envKoitoToken)
+	if err != nil {
+		return koito.Config{}, err
+	}
+
+	return koito.Config{
+		URL:   url,
+		Token: token,
 	}, nil
 }
 
@@ -118,4 +158,22 @@ func getRequiredEnv(key string) (string, error) {
 	}
 
 	return value, nil
+}
+
+func validateSource(source string) (sources.SourceType, error) {
+	switch source {
+	case string(sources.SourceSpotify):
+		return sources.SourceSpotify, nil
+	default:
+		return "", fmt.Errorf("Invalid source: %s. Valid sources are: %s", source, sources.SourceSpotify)
+	}
+}
+
+func validateTarget(target string) (targets.TargetType, error) {
+	switch target {
+	case string(targets.TargetKoito):
+		return targets.TargetKoito, nil
+	default:
+		return "", fmt.Errorf("Invalid target: %s. Valid targets are: %s", target, targets.TargetKoito)
+	}
 }

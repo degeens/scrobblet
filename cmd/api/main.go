@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/degeens/scrobblet/internal/clients/koito"
 	"github.com/degeens/scrobblet/internal/clients/spotify"
 	"github.com/degeens/scrobblet/internal/scrobbler"
 	"github.com/degeens/scrobblet/internal/sources"
@@ -24,15 +23,23 @@ func main() {
 	}
 	slog.Info("Config loaded")
 
-	spotifyClient := spotify.NewClient(cfg.spotify.clientID, cfg.spotify.clientSecret, cfg.spotify.redirectURL, cfg.dataPath)
-	koitoClient := koito.NewClient(cfg.koito.url, cfg.koito.token)
-
-	app := &application{
-		spotifyClient: spotifyClient,
+	sourceClient, source, err := sources.New(cfg.source, cfg.clients)
+	if err != nil {
+		slog.Error(err.Error())
+		os.Exit(1)
 	}
 
-	source := sources.NewSpotifySource(spotifyClient)
-	target := targets.NewKoitoTarget(koitoClient)
+	_, target, err := targets.New(cfg.target, cfg.clients)
+	if err != nil {
+		slog.Error(err.Error())
+		os.Exit(1)
+	}
+
+	app := &application{}
+	if spotifyClient, ok := sourceClient.(*spotify.Client); ok {
+		app.spotifyClient = spotifyClient
+	}
+
 	scrobbler := scrobbler.NewScrobbler(source, target)
 
 	go scrobbler.Start()

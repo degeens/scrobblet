@@ -37,8 +37,7 @@ func (t *Tracker) Start() {
 			continue
 		}
 
-		// Handle previous track
-		if trackedTrack != nil && (playbackState == nil || !playbackState.Track.Equals(trackedTrack.Track)) {
+		if t.isTrackChange(playbackState, trackedTrack) || t.isTrackReplay(playbackState, trackedTrack) {
 			select {
 			case t.trackChan <- *trackedTrack:
 				slog.Info("Track added to queue", trackedTrack.Track.SlogArgs()...)
@@ -49,7 +48,6 @@ func (t *Tracker) Start() {
 			trackedTrack = nil
 		}
 
-		// Handle current track
 		if playbackState == nil {
 			slog.Debug("No track playing")
 			continue
@@ -66,31 +64,47 @@ func (t *Tracker) Start() {
 				StartedAt:     now,
 				LastUpdatedAt: now,
 			}
-
 			slog.Info("Track is being tracked", trackedTrack.SlogArgs()...)
-
 			continue
 		}
 
-		// Continue tracking existing track
 		positionDiff := playbackState.Position - trackedTrack.LastPosition
 		timeDiff := playbackState.Timestamp.Sub(trackedTrack.LastUpdatedAt)
 
-		drift := positionDiff - timeDiff
-		if drift < 0 {
-			drift = -drift
-		}
-
-		if drift > driftTolerance {
-			trackedTrack.LastPosition = playbackState.Position
-
-			slog.Info("Seek or pause detected", trackedTrack.SlogArgs()...)
-		} else {
+		// Continue tracking existing track
+		if t.isNormalPlayback(positionDiff, timeDiff) {
 			trackedTrack.Duration += positionDiff
 			trackedTrack.LastPosition = playbackState.Position
 			trackedTrack.LastUpdatedAt = now
 
 			slog.Info("Track is being tracked", trackedTrack.SlogArgs()...)
+		} else {
+			trackedTrack.LastPosition = playbackState.Position
+			trackedTrack.LastUpdatedAt = now
+
+			slog.Info("Seek or pause detected", trackedTrack.SlogArgs()...)
 		}
 	}
+}
+
+func (t *Tracker) isTrackChange(playbackState *sources.PlaybackState, trackedTrack *common.TrackedTrack) bool {
+	return trackedTrack != nil &&
+		(playbackState == nil || !playbackState.Track.Equals(trackedTrack.Track))
+}
+
+func (t *Tracker) isTrackReplay(playbackState *sources.PlaybackState, trackedTrack *common.TrackedTrack) bool {
+	return trackedTrack != nil &&
+		playbackState != nil &&
+		playbackState.Track.Equals(trackedTrack.Track) &&
+		playbackState.Position <= pollInterval &&
+		trackedTrack.LastPosition > pollInterval
+}
+
+func (t *Tracker) isNormalPlayback(positionDiff, timeDiff time.Duration) bool {
+	drift := positionDiff - timeDiff
+	if drift < 0 {
+		drift = -drift
+	}
+
+	return drift < driftTolerance
 }

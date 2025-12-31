@@ -17,15 +17,36 @@ func NewKoitoTarget(client *koito.Client) *KoitoTarget {
 	}
 }
 
-func (t *KoitoTarget) SubmitTrack(trackedTrack *common.TrackedTrack) error {
-	req := toSubmitListens(trackedTrack)
+func (t *KoitoTarget) SubmitPlayingTrack(track *common.Track) error {
+	req := toPlayingNowSubmitListens(track)
 
-	err := t.client.SubmitListens(req)
-
-	return err
+	return t.client.SubmitListens(req)
 }
 
-func toSubmitListens(trackedTrack *common.TrackedTrack) *koito.SubmitListens {
+func (t *KoitoTarget) SubmitPlayedTrack(trackedTrack *common.TrackedTrack) error {
+	req := toSingleSubmitListens(trackedTrack)
+
+	return t.client.SubmitListens(req)
+}
+
+func toPlayingNowSubmitListens(track *common.Track) *koito.SubmitListens {
+	artistName := strings.Join(track.Artists, ", ")
+
+	return &koito.SubmitListens{
+		ListenType: "playing_now",
+		Payload: []koito.Payload{
+			{
+				TrackMetadata: koito.TrackMetadata{
+					ArtistName:  artistName,
+					TrackName:   track.Title,
+					ReleaseName: track.Album,
+				},
+			},
+		},
+	}
+}
+
+func toSingleSubmitListens(trackedTrack *common.TrackedTrack) *koito.SubmitListens {
 	artistName := strings.Join(trackedTrack.Track.Artists, ", ")
 
 	return &koito.SubmitListens{

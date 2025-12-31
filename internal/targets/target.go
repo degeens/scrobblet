@@ -15,7 +15,8 @@ const (
 )
 
 type Target interface {
-	SubmitTrack(track *common.TrackedTrack) error
+	SubmitPlayingTrack(track *common.Track) error
+	SubmitPlayedTrack(trackedTrack *common.TrackedTrack) error
 }
 
 func New(targetType TargetType, clientsConfig clients.Config) (any, Target, error) {

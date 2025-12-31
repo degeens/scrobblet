@@ -19,11 +19,12 @@ func NewScrobbler(source sources.Source, target targets.Target) *Scrobbler {
 }
 
 func (s *Scrobbler) Start() {
-	trackChan := make(chan common.TrackedTrack, 10)
+	playingTrackChan := make(chan common.Track, 1)
+	playedTrackChan := make(chan common.TrackedTrack, 10)
 
-	tracker := NewTracker(s.source, trackChan)
+	tracker := NewTracker(s.source, playingTrackChan, playedTrackChan)
 	go tracker.Start()
 
-	submitter := NewSubmitter(s.target, trackChan)
+	submitter := NewSubmitter(s.target, playingTrackChan, playedTrackChan)
 	go submitter.Start()
 }

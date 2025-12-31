@@ -14,14 +14,16 @@ const (
 )
 
 type Tracker struct {
-	source    sources.Source
-	trackChan chan<- common.TrackedTrack
+	source           sources.Source
+	playingTrackChan chan common.Track
+	playedTrackChan  chan<- common.TrackedTrack
 }
 
-func NewTracker(source sources.Source, trackChan chan<- common.TrackedTrack) *Tracker {
+func NewTracker(source sources.Source, playingTrackChan chan common.Track, playedTrackChan chan<- common.TrackedTrack) *Tracker {
 	return &Tracker{
-		source:    source,
-		trackChan: trackChan,
+		source:           source,
+		playingTrackChan: playingTrackChan,
+		playedTrackChan:  playedTrackChan,
 	}
 }
 
@@ -38,13 +40,7 @@ func (t *Tracker) Start() {
 		}
 
 		if t.isTrackChange(playbackState, trackedTrack) || t.isTrackReplay(playbackState, trackedTrack) {
-			select {
-			case t.trackChan <- *trackedTrack:
-				slog.Info("Track added to queue", trackedTrack.Track.SlogArgs()...)
-			default:
-				slog.Warn("Track queue is full, skipping track", trackedTrack.Track.SlogArgs()...)
-			}
-
+			t.sendPlayedTrack(trackedTrack)
 			trackedTrack = nil
 		}
 
@@ -65,6 +61,9 @@ func (t *Tracker) Start() {
 				LastUpdatedAt: now,
 			}
 			slog.Info("Track is being tracked", trackedTrack.SlogArgs()...)
+
+			t.sendPlayingTrack(trackedTrack.Track)
+
 			continue
 		}
 
@@ -107,4 +106,28 @@ func (t *Tracker) isNormalPlayback(positionDiff, timeDiff time.Duration) bool {
 	}
 
 	return drift < driftTolerance
+}
+
+func (t *Tracker) sendPlayedTrack(trackedTrack *common.TrackedTrack) {
+	select {
+	case t.playedTrackChan <- *trackedTrack:
+		slog.Info("Track added to queue", trackedTrack.Track.SlogArgs()...)
+	default:
+		slog.Warn("Track queue is full, skipping track", trackedTrack.Track.SlogArgs()...)
+	}
+}
+
+func (t *Tracker) sendPlayingTrack(track *common.Track) {
+	// Drain any pending track to ensure the latest track wins
+	select {
+	case <-t.playingTrackChan:
+	default:
+	}
+
+	select {
+	case t.playingTrackChan <- *track:
+	default:
+		// This should never happen after draining with buffer size 1
+		slog.Error("Failed to send now playing track to channel", track.SlogArgs()...)
+	}
 }

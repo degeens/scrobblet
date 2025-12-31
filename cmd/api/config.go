@@ -6,6 +6,7 @@ import (
 
 	"github.com/degeens/scrobblet/internal/clients"
 	"github.com/degeens/scrobblet/internal/clients/koito"
+	"github.com/degeens/scrobblet/internal/clients/listenbrainz"
 	"github.com/degeens/scrobblet/internal/clients/spotify"
 	"github.com/degeens/scrobblet/internal/sources"
 	"github.com/degeens/scrobblet/internal/targets"
@@ -34,6 +35,7 @@ const (
 	envSpotifyRedirectURL  = "SPOTIFY_REDIRECT_URL"
 	envKoitoURL            = "KOITO_URL"
 	envKoitoToken          = "KOITO_TOKEN"
+	envListenBrainzToken   = "LISTENBRAINZ_TOKEN"
 )
 
 func loadConfig() (*config, error) {
@@ -77,6 +79,7 @@ func loadConfig() (*config, error) {
 func loadClientsConfig(sourceType sources.SourceType, targetType targets.TargetType, dataPath string) (clients.Config, error) {
 	var spotifyConfig spotify.Config
 	var koitoConfig koito.Config
+	var listenbrainzConfig listenbrainz.Config
 	var err error
 
 	if sourceType == sources.SourceSpotify {
@@ -93,9 +96,17 @@ func loadClientsConfig(sourceType sources.SourceType, targetType targets.TargetT
 		}
 	}
 
+	if targetType == targets.TargetListenBrainz {
+		listenbrainzConfig, err = loadListenBrainzConfig()
+		if err != nil {
+			return clients.Config{}, err
+		}
+	}
+
 	return clients.Config{
-		Spotify: spotifyConfig,
-		Koito:   koitoConfig,
+		Spotify:      spotifyConfig,
+		Koito:        koitoConfig,
+		ListenBrainz: listenbrainzConfig,
 	}, nil
 }
 
@@ -140,6 +151,17 @@ func loadKoitoConfig() (koito.Config, error) {
 	}, nil
 }
 
+func loadListenBrainzConfig() (listenbrainz.Config, error) {
+	token, err := getRequiredEnv(envListenBrainzToken)
+	if err != nil {
+		return listenbrainz.Config{}, err
+	}
+
+	return listenbrainz.Config{
+		Token: token,
+	}, nil
+}
+
 func getEnv(key string, defaultValue string) string {
 	value := os.Getenv(key)
 
@@ -173,7 +195,9 @@ func validateTarget(target string) (targets.TargetType, error) {
 	switch target {
 	case string(targets.TargetKoito):
 		return targets.TargetKoito, nil
+	case string(targets.TargetListenBrainz):
+		return targets.TargetListenBrainz, nil
 	default:
-		return "", fmt.Errorf("Invalid target: %s. Valid targets are: %s", target, targets.TargetKoito)
+		return "", fmt.Errorf("Invalid target: %s. Valid targets are: %s, %s", target, targets.TargetKoito, targets.TargetListenBrainz)
 	}
 }

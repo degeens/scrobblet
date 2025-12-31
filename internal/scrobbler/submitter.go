@@ -29,8 +29,9 @@ func (s *Submitter) Start() {
 
 			err := s.target.SubmitPlayingTrack(&track)
 			if err != nil {
-				slog.Error("Failed to submit now playing track", append(track.SlogArgs(), "error", err)...)
+				slog.Error("Failed to submit now playing track", append(track.SlogArgs(), "error", err.Error())...)
 				continue
+				// todo: retry (with exponential backoff)
 			}
 
 			slog.Info("Now playing track submitted", track.SlogArgs()...)
@@ -45,7 +46,7 @@ func (s *Submitter) Start() {
 
 			err := s.target.SubmitPlayedTrack(&trackedTrack)
 			if err != nil {
-				slog.Error("Failed to submit track", append(trackedTrack.Track.SlogArgs(), "error", err)...)
+				slog.Error("Failed to submit track", append(trackedTrack.Track.SlogArgs(), "error", err.Error())...)
 				continue
 				// todo: retry (with exponential backoff)
 			}

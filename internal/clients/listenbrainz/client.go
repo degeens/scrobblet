@@ -1,4 +1,4 @@
-package koito
+package listenbrainz
 
 import (
 	"bytes"
@@ -9,13 +9,17 @@ import (
 	"time"
 )
 
+const (
+	baseURL = "https://api.listenbrainz.org"
+)
+
 type Client struct {
 	baseURL    string
 	httpClient *http.Client
 	token      string
 }
 
-func NewClient(baseURL string, token string) *Client {
+func NewClient(token string) *Client {
 	return &Client{
 		baseURL:    baseURL,
 		httpClient: &http.Client{Timeout: 5 * time.Second},
@@ -24,7 +28,7 @@ func NewClient(baseURL string, token string) *Client {
 }
 
 func (c *Client) SubmitListens(request *SubmitListens) error {
-	url := c.baseURL + "/apis/listenbrainz/1/submit-listens"
+	url := c.baseURL + "/1/submit-listens"
 
 	jsonData, err := json.Marshal(request)
 	if err != nil {
@@ -54,5 +58,5 @@ func (c *Client) SubmitListens(request *SubmitListens) error {
 		return nil
 	}
 
-	return fmt.Errorf("Failed to submit listens to Koito (HTTP %d): %s", res.StatusCode, string(body))
+	return fmt.Errorf("Failed to submit listens to ListenBrainz (HTTP %d): %s", res.StatusCode, string(body))
 }

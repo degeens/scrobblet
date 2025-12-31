@@ -1,4 +1,4 @@
-package koito
+package listenbrainz
 
 type SubmitListens struct {
 	ListenType string    `json:"listen_type"`

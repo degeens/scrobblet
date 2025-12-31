@@ -11,6 +11,7 @@ Sources:
 
 Targets:
 - Koito
+- ListenBrainz
 
 More sources and targets can be easily added! Feel free to [create a pull request](https://github.com/degeens/scrobblet/pulls) with your implementation or [open an issue](https://github.com/degeens/scrobblet/issues) to request a new integration.
 
@@ -37,6 +38,7 @@ services:
       - SPOTIFY_REDIRECT_URL=http://127.0.0.1:7276/callback
       - KOITO_URL=your_koito_url
       - KOITO_TOKEN=your_koito_token
+      - LISTENBRAINZ_TOKEN=your_listenbrainz_token
 
 volumes:
   scrobblet-data:
@@ -87,6 +89,18 @@ To get a Koito token:
 2. Log in
 3. Go to Settings → API Keys
 4. Generate a new API key
+
+### ListenBrainz Configuration
+
+| Variable | Required | Default | Description |
+|----------|----------|---------|-------------|
+| `LISTENBRAINZ_TOKEN` | Yes* | - | Your ListenBrainz user token |
+
+*Required only when `SCROBBLET_TARGET=ListenBrainz`
+
+To get a ListenBrainz token:
+1. Go to [ListenBrainz User Settings](https://listenbrainz.org/settings/)
+2. Copy your User token
 
 ## License
 

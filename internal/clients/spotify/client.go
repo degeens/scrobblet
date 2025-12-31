@@ -3,6 +3,7 @@ package spotify
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"path/filepath"
 	"time"
@@ -66,16 +67,21 @@ func (c *Client) GetCurrentlyPlayingTrack() (*CurrentlyPlayingTrack, error) {
 	}
 	defer res.Body.Close()
 
+	body, err := io.ReadAll(res.Body)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to read response body: %w", err)
+	}
+
 	switch res.StatusCode {
 	case http.StatusOK:
 		var currentlyPlaying CurrentlyPlayingTrack
-		if err := json.NewDecoder(res.Body).Decode(&currentlyPlaying); err != nil {
+		if err := json.Unmarshal(body, &currentlyPlaying); err != nil {
 			return nil, err
 		}
 		return &currentlyPlaying, nil
 	case http.StatusNoContent:
 		return nil, nil
 	default:
-		return nil, fmt.Errorf("Failed to get currently playing track from Spotify (HTTP status code %d)", res.StatusCode)
+		return nil, fmt.Errorf("Failed to get currently playing track from Spotify (HTTP %d): %s", res.StatusCode, string(body))
 	}
 }

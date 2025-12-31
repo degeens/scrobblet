@@ -18,18 +18,18 @@ func NewKoitoTarget(client *koito.Client) *KoitoTarget {
 }
 
 func (t *KoitoTarget) SubmitPlayingTrack(track *common.Track) error {
-	req := toPlayingNowSubmitListens(track)
+	req := t.toPlayingNowSubmitListens(track)
 
 	return t.client.SubmitListens(req)
 }
 
 func (t *KoitoTarget) SubmitPlayedTrack(trackedTrack *common.TrackedTrack) error {
-	req := toSingleSubmitListens(trackedTrack)
+	req := t.toSingleSubmitListens(trackedTrack)
 
 	return t.client.SubmitListens(req)
 }
 
-func toPlayingNowSubmitListens(track *common.Track) *koito.SubmitListens {
+func (t *KoitoTarget) toPlayingNowSubmitListens(track *common.Track) *koito.SubmitListens {
 	artistName := strings.Join(track.Artists, ", ")
 
 	return &koito.SubmitListens{
@@ -46,14 +46,15 @@ func toPlayingNowSubmitListens(track *common.Track) *koito.SubmitListens {
 	}
 }
 
-func toSingleSubmitListens(trackedTrack *common.TrackedTrack) *koito.SubmitListens {
+func (t *KoitoTarget) toSingleSubmitListens(trackedTrack *common.TrackedTrack) *koito.SubmitListens {
+	listenedAt := trackedTrack.LastUpdatedAt.Unix()
 	artistName := strings.Join(trackedTrack.Track.Artists, ", ")
 
 	return &koito.SubmitListens{
 		ListenType: "single",
 		Payload: []koito.Payload{
 			{
-				ListenedAt: trackedTrack.LastUpdatedAt.Unix(),
+				ListenedAt: &listenedAt,
 				TrackMetadata: koito.TrackMetadata{
 					ArtistName:  artistName,
 					TrackName:   trackedTrack.Track.Title,

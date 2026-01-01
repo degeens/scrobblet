@@ -7,9 +7,9 @@ func HasReachedScrobbleThreshold(trackedDuration, trackDuration time.Duration) b
 }
 
 func hasReachedAbsoluteScrobbleThreshold(trackedDuration time.Duration) bool {
-	threeMinutes := time.Duration(3) * time.Minute
+	fourMinutes := time.Duration(4) * time.Minute
 
-	return trackedDuration >= threeMinutes
+	return trackedDuration >= fourMinutes
 }
 
 func hasReachedRelativeScrobbleThreshold(trackedDuration, trackDuration time.Duration) bool {

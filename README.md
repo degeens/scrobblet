@@ -12,6 +12,7 @@ Sources:
 Targets:
 - Koito
 - ListenBrainz
+- Last.fm
 
 More sources and targets can be easily added! Feel free to [create a pull request](https://github.com/degeens/scrobblet/pulls) with your implementation or [open an issue](https://github.com/degeens/scrobblet/issues) to request a new integration.
 
@@ -35,16 +36,25 @@ services:
       - SCROBBLET_TARGET=Koito
       - SPOTIFY_CLIENT_ID=your_spotify_client_id
       - SPOTIFY_CLIENT_SECRET=your_spotify_client_secret
-      - SPOTIFY_REDIRECT_URL=http://127.0.0.1:7276/callback
+      - SPOTIFY_REDIRECT_URL=http://127.0.0.1:7276/spotify/callback
       - KOITO_URL=your_koito_url
       - KOITO_TOKEN=your_koito_token
       - LISTENBRAINZ_TOKEN=your_listenbrainz_token
+      - LASTFM_API_KEY=your_lastfm_api_key
+      - LASTFM_SECRET=your_lastfm_secret
+      - LASTFM_SESSION_KEY=
+      - LASTFM_CALLBACK_URL=http://127.0.0.1:7276/lastfm/callback
 
 volumes:
   scrobblet-data:
 ```
 
-Start the service with `docker-compose up -d`. If using Spotify as a source, visit `http://localhost:7276/login` to authenticate with your Spotify account.
+Start the service with `docker-compose up -d`.
+
+### Authentication
+
+- **Spotify**: Visit `http://localhost:7276/spotify/login` to authenticate with your Spotify account
+- **Last.fm**: Visit `http://localhost:7276/lastfm/login` to authenticate with your Last.fm account
 
 ## Configuration
 
@@ -72,7 +82,7 @@ All configuration is done through environment variables.
 To get Spotify credentials:
 1. Go to [Spotify Developer Dashboard](https://developer.spotify.com/dashboard)
 2. Create a new app
-3. Add `http://127.0.0.1:7276/callback` (or your custom URL) to Redirect URIs
+3. Add `http://127.0.0.1:7276/spotify/callback` (or your custom URL) to Redirect URIs
 4. Copy the Client ID and Client secret
 
 ### Koito Configuration
@@ -101,6 +111,26 @@ To get a Koito token:
 To get a ListenBrainz token:
 1. Go to [ListenBrainz User Settings](https://listenbrainz.org/settings/)
 2. Copy your User token
+
+### Last.fm Configuration
+
+| Variable | Required | Default | Description |
+|----------|----------|---------|-------------|
+| `LASTFM_API_KEY` | Yes* | - | Your Last.fm API key |
+| `LASTFM_SECRET` | Yes* | - | Your Last.fm shared secret |
+| `LASTFM_SESSION_KEY` | No | - | Your Last.fm session key (obtained via auth flow) |
+| `LASTFM_CALLBACK_URL` | Yes* | - | OAuth callback URL (e.g., `http://127.0.0.1:7276/lastfm/callback`) |
+
+*Required only when `SCROBBLET_TARGET=LastFm`
+
+To set up Last.fm:
+1. Go to [Last.fm API Account Creation](https://www.last.fm/api/account/create)
+2. Create an API account for your application
+3. Set the callback URL to match `LASTFM_CALLBACK_URL` (e.g., `http://127.0.0.1:7276/lastfm/callback`)
+4. Copy the API Key and Shared Secret
+5. Start scrobblet with the API key and secret configured
+6. Visit `http://localhost:7276/lastfm/login` to authenticate
+7. After authorization on Last.fm, you'll be redirected back and the session key will be saved automatically
 
 ## License
 

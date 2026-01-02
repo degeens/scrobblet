@@ -6,6 +6,7 @@ import (
 
 	"github.com/degeens/scrobblet/internal/clients"
 	"github.com/degeens/scrobblet/internal/clients/koito"
+	"github.com/degeens/scrobblet/internal/clients/lastfm"
 	"github.com/degeens/scrobblet/internal/clients/listenbrainz"
 	"github.com/degeens/scrobblet/internal/clients/spotify"
 	"github.com/degeens/scrobblet/internal/sources"
@@ -36,6 +37,10 @@ const (
 	envKoitoURL            = "KOITO_URL"
 	envKoitoToken          = "KOITO_TOKEN"
 	envListenBrainzToken   = "LISTENBRAINZ_TOKEN"
+	envLastFmAPIKey        = "LASTFM_API_KEY"
+	envLastFmSecret        = "LASTFM_SECRET"
+	envLastFmSessionKey    = "LASTFM_SESSION_KEY"
+	envLastFmCallbackURL   = "LASTFM_CALLBACK_URL"
 )
 
 func loadConfig() (*config, error) {
@@ -80,6 +85,7 @@ func loadClientsConfig(sourceType sources.SourceType, targetType targets.TargetT
 	var spotifyConfig spotify.Config
 	var koitoConfig koito.Config
 	var listenbrainzConfig listenbrainz.Config
+	var lastfmConfig lastfm.Config
 	var err error
 
 	if sourceType == sources.SourceSpotify {
@@ -103,10 +109,18 @@ func loadClientsConfig(sourceType sources.SourceType, targetType targets.TargetT
 		}
 	}
 
+	if targetType == targets.TargetLastFm {
+		lastfmConfig, err = loadLastFmConfig(dataPath)
+		if err != nil {
+			return clients.Config{}, err
+		}
+	}
+
 	return clients.Config{
 		Spotify:      spotifyConfig,
 		Koito:        koitoConfig,
 		ListenBrainz: listenbrainzConfig,
+		LastFm:       lastfmConfig,
 	}, nil
 }
 
@@ -162,6 +176,35 @@ func loadListenBrainzConfig() (listenbrainz.Config, error) {
 	}, nil
 }
 
+func loadLastFmConfig(dataPath string) (lastfm.Config, error) {
+	apiKey, err := getRequiredEnv(envLastFmAPIKey)
+	if err != nil {
+		return lastfm.Config{}, err
+	}
+
+	secret, err := getRequiredEnv(envLastFmSecret)
+	if err != nil {
+		return lastfm.Config{}, err
+	}
+
+	// Session key is optional - can be obtained through auth flow
+	sessionKey := getEnv(envLastFmSessionKey, "")
+
+	// Callback URL is required for web auth flow
+	callbackURL, err := getRequiredEnv(envLastFmCallbackURL)
+	if err != nil {
+		return lastfm.Config{}, err
+	}
+
+	return lastfm.Config{
+		APIKey:      apiKey,
+		Secret:      secret,
+		SessionKey:  sessionKey,
+		CallbackURL: callbackURL,
+		DataPath:    dataPath,
+	}, nil
+}
+
 func getEnv(key string, defaultValue string) string {
 	value := os.Getenv(key)
 
@@ -197,7 +240,9 @@ func validateTarget(target string) (targets.TargetType, error) {
 		return targets.TargetKoito, nil
 	case string(targets.TargetListenBrainz):
 		return targets.TargetListenBrainz, nil
+	case string(targets.TargetLastFm):
+		return targets.TargetLastFm, nil
 	default:
-		return "", fmt.Errorf("Invalid target: %s. Valid targets are: %s, %s", target, targets.TargetKoito, targets.TargetListenBrainz)
+		return "", fmt.Errorf("Invalid target: %s. Valid targets are: %s, %s, %s", target, targets.TargetKoito, targets.TargetListenBrainz, targets.TargetLastFm)
 	}
 }

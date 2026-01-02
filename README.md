@@ -1,5 +1,11 @@
 # Scrobblet
 
+![Go version](https://img.shields.io/github/go-mod/go-version/degeens/scrobblet?label=go)
+[![Go Report](https://goreportcard.com/badge/github.com/degeens/scrobblet)](https://goreportcard.com/report/github.com/degeens/scrobblet)
+![Release](https://img.shields.io/github/v/release/degeens/scrobblet?include_prereleases)
+[![License](https://img.shields.io/github/license/degeens/scrobblet)](LICENSE)
+
+
 Scrobblet is a lightweight scrobbler for self-hosters. It tracks your listening activity from a music source and scrobbles it to your preferred target, and is easily extensible with new integrations.
 
 > **⚠️ Warning**: This project is in early stages of development. Features and APIs may change without notice.

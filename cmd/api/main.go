@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/degeens/scrobblet/internal/clients/lastfm"
 	"github.com/degeens/scrobblet/internal/clients/spotify"
 	"github.com/degeens/scrobblet/internal/scrobbler"
 	"github.com/degeens/scrobblet/internal/sources"
@@ -13,6 +14,7 @@ import (
 
 type application struct {
 	spotifyClient *spotify.Client
+	lastfmClient  *lastfm.Client
 }
 
 func main() {
@@ -29,7 +31,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	_, target, err := targets.New(cfg.target, cfg.clients)
+	targetClient, target, err := targets.New(cfg.target, cfg.clients)
 	if err != nil {
 		slog.Error(err.Error())
 		os.Exit(1)
@@ -38,6 +40,9 @@ func main() {
 	app := &application{}
 	if spotifyClient, ok := sourceClient.(*spotify.Client); ok {
 		app.spotifyClient = spotifyClient
+	}
+	if lastfmClient, ok := targetClient.(*lastfm.Client); ok {
+		app.lastfmClient = lastfmClient
 	}
 
 	scrobbler := scrobbler.NewScrobbler(source, target)

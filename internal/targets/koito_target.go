@@ -40,6 +40,9 @@ func (t *KoitoTarget) toPlayingNowSubmitListens(track *common.Track) *koito.Subm
 					ArtistName:  artistName,
 					TrackName:   track.Title,
 					ReleaseName: track.Album,
+					AdditionalInfo: koito.AdditionalInfo{
+						ArtistNames: track.Artists,
+					},
 				},
 			},
 		},
@@ -59,6 +62,9 @@ func (t *KoitoTarget) toSingleSubmitListens(trackedTrack *common.TrackedTrack) *
 					ArtistName:  artistName,
 					TrackName:   trackedTrack.Track.Title,
 					ReleaseName: trackedTrack.Track.Album,
+					AdditionalInfo: koito.AdditionalInfo{
+						ArtistNames: trackedTrack.Track.Artists,
+					},
 				},
 			},
 		},

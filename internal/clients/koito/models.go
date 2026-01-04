@@ -11,7 +11,12 @@ type Payload struct {
 }
 
 type TrackMetadata struct {
-	ArtistName  string `json:"artist_name"`
-	TrackName   string `json:"track_name"`
-	ReleaseName string `json:"release_name"`
+	ArtistName     string         `json:"artist_name"`
+	TrackName      string         `json:"track_name"`
+	ReleaseName    string         `json:"release_name"`
+	AdditionalInfo AdditionalInfo `json:"additional_info"`
+}
+
+type AdditionalInfo struct {
+	ArtistNames []string `json:"artist_names"`
 }

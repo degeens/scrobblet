@@ -40,6 +40,9 @@ func (t *ListenBrainzTarget) toPlayingNowSubmitListens(track *common.Track) *lis
 					ArtistName:  artistName,
 					TrackName:   track.Title,
 					ReleaseName: track.Album,
+					AdditionalInfo: listenbrainz.AdditionalInfo{
+						ArtistNames: track.Artists,
+					},
 				},
 			},
 		},
@@ -59,6 +62,9 @@ func (t *ListenBrainzTarget) toSingleSubmitListens(trackedTrack *common.TrackedT
 					ArtistName:  artistName,
 					TrackName:   trackedTrack.Track.Title,
 					ReleaseName: trackedTrack.Track.Album,
+					AdditionalInfo: listenbrainz.AdditionalInfo{
+						ArtistNames: trackedTrack.Track.Artists,
+					},
 				},
 			},
 		},

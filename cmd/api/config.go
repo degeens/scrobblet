@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"net/url"
 	"os"
 
 	"github.com/degeens/scrobblet/internal/clients"
@@ -126,6 +127,11 @@ func loadSpotifyConfig(dataPath string) (spotify.Config, error) {
 		return spotify.Config{}, err
 	}
 
+	err = validateRedirectURL(redirectURL)
+	if err != nil {
+		return spotify.Config{}, err
+	}
+
 	return spotify.Config{
 		ClientID:     clientID,
 		ClientSecret: clientSecret,
@@ -187,7 +193,7 @@ func validateSource(source string) (sources.SourceType, error) {
 	case string(sources.SourceSpotify):
 		return sources.SourceSpotify, nil
 	default:
-		return "", fmt.Errorf("Invalid source: %s. Valid sources are: %s", source, sources.SourceSpotify)
+		return "", fmt.Errorf("Invalid source: %s. Valid sources are: %s.", source, sources.SourceSpotify)
 	}
 }
 
@@ -198,6 +204,19 @@ func validateTarget(target string) (targets.TargetType, error) {
 	case string(targets.TargetListenBrainz):
 		return targets.TargetListenBrainz, nil
 	default:
-		return "", fmt.Errorf("Invalid target: %s. Valid targets are: %s, %s", target, targets.TargetKoito, targets.TargetListenBrainz)
+		return "", fmt.Errorf("Invalid target: %s. Valid targets are: %s, %s.", target, targets.TargetKoito, targets.TargetListenBrainz)
 	}
+}
+
+func validateRedirectURL(redirectURL string) error {
+	parsedURL, err := url.Parse(redirectURL)
+	if err != nil {
+		return fmt.Errorf("Invalid redirect URL: %w", err)
+	}
+
+	if parsedURL.Path != "/callback" {
+		return fmt.Errorf("Invalid redirect URL path: %s. Path must be /callback.", parsedURL.Path)
+	}
+
+	return nil
 }

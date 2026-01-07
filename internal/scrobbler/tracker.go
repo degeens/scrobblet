@@ -9,8 +9,10 @@ import (
 )
 
 const (
-	pollInterval   = 10 * time.Second
-	driftTolerance = 2 * time.Second
+	activePollInterval   = 10 * time.Second
+	inactivePollInterval = 30 * time.Second
+	inactivityThreshold  = 5 * time.Minute
+	driftTolerance       = 2 * time.Second
 )
 
 type Tracker struct {
@@ -28,6 +30,8 @@ func NewTracker(source sources.Source, playingTrackChan chan common.Track, playe
 }
 
 func (t *Tracker) Start() {
+	lastActivity := time.Now().UTC()
+	pollInterval := activePollInterval
 	ticker := time.NewTicker(pollInterval)
 
 	var trackedTrack *common.TrackedTrack
@@ -46,10 +50,16 @@ func (t *Tracker) Start() {
 
 		if playbackState == nil {
 			slog.Debug("No track playing")
+
+			pollInterval = t.switchToInactivePollingIntervalIfNeeded(ticker, pollInterval, lastActivity)
+
 			continue
 		}
 
 		now := time.Now().UTC()
+
+		lastActivity = now
+		pollInterval = t.switchToActivePollingIntervalIfNeeded(ticker, pollInterval)
 
 		// Start tracking new track
 		if trackedTrack == nil {
@@ -95,8 +105,8 @@ func (t *Tracker) isTrackReplay(playbackState *sources.PlaybackState, trackedTra
 	return trackedTrack != nil &&
 		playbackState != nil &&
 		playbackState.Track.Equals(trackedTrack.Track) &&
-		playbackState.Position <= pollInterval &&
-		trackedTrack.LastPosition > pollInterval
+		playbackState.Position <= activePollInterval &&
+		trackedTrack.LastPosition > activePollInterval
 }
 
 func (t *Tracker) isNormalPlayback(positionDiff, timeDiff time.Duration) bool {
@@ -106,6 +116,30 @@ func (t *Tracker) isNormalPlayback(positionDiff, timeDiff time.Duration) bool {
 	}
 
 	return drift < driftTolerance
+}
+
+func (t *Tracker) switchToInactivePollingIntervalIfNeeded(ticker *time.Ticker, currentInterval time.Duration, lastActivityTime time.Time) time.Duration {
+	if time.Since(lastActivityTime) > inactivityThreshold && currentInterval != inactivePollInterval {
+		ticker.Reset(inactivePollInterval)
+
+		slog.Info("Switched to inactive polling interval", "interval", inactivePollInterval)
+
+		return inactivePollInterval
+	}
+
+	return currentInterval
+}
+
+func (t *Tracker) switchToActivePollingIntervalIfNeeded(ticker *time.Ticker, currentInterval time.Duration) time.Duration {
+	if currentInterval != activePollInterval {
+		ticker.Reset(activePollInterval)
+
+		slog.Info("Switched to active polling interval", "interval", activePollInterval)
+
+		return activePollInterval
+	}
+
+	return currentInterval
 }
 
 func (t *Tracker) sendPlayedTrack(trackedTrack *common.TrackedTrack) {

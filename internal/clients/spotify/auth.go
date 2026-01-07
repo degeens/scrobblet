@@ -7,7 +7,6 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
-	"time"
 
 	"golang.org/x/oauth2"
 )
@@ -32,20 +31,19 @@ func (c *Client) refreshTokenIfNeeded() error {
 		return errors.New("Not authenticated, log in via /login")
 	}
 
-	// Check if token is expired or about to expire (within 5 minutes)
-	if time.Now().Add(5 * time.Minute).Before(c.oauth2Token.Expiry) {
-		return nil // Token is still valid
-	}
-
-	// Use oauth2 TokenSource to automatically refresh
+	// TokenSource automatically handles token refresh when needed
 	token, err := c.oauth2Config.TokenSource(context.Background(), c.oauth2Token).Token()
 	if err != nil {
 		return err
 	}
 
-	c.oauth2Token = token
+	// Only save if the token was actually refreshed
+	if token.AccessToken != c.oauth2Token.AccessToken {
+		c.oauth2Token = token
+		return c.saveToken()
+	}
 
-	return c.saveToken()
+	return nil
 }
 
 func (c *Client) loadToken() error {

@@ -46,7 +46,7 @@ func (t *LastFmTarget) toScrobble(trackedTrack *common.TrackedTrack) lastfm.Scro
 	return lastfm.ScrobbleRequest{
 		Artist:    artistName,
 		Track:     trackedTrack.Track.Title,
-		Timestamp: trackedTrack.LastUpdatedAt.Unix(),
+		Timestamp: trackedTrack.StartedAt.Unix(),
 		Album:     trackedTrack.Track.Album,
 		Duration:  int(trackedTrack.Track.Duration.Seconds()),
 	}

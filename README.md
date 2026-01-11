@@ -56,11 +56,6 @@ volumes:
 
 Start the service with `docker-compose up -d`.
 
-### Authentication
-
-- **Spotify**: Visit `http://localhost:7276/spotify/login` to authenticate with your Spotify account
-- **Last.fm**: Visit `http://localhost:7276/lastfm/login` to authenticate with your Last.fm account
-
 ## Configuration
 
 All configuration is done through environment variables.
@@ -91,7 +86,6 @@ To set up Spotify:
 4. Copy the client ID and client secret
 5. Start Scrobblet with the client ID and client secret configured
 6. Visit `http://localhost:7276/spotify/login` to authenticate
-
 
 ### Koito Configuration
 

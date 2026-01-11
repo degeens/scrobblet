@@ -5,13 +5,13 @@ import (
 	"net/http"
 )
 
-func (app *application) login(w http.ResponseWriter, r *http.Request) {
+func (app *application) spotifyLogin(w http.ResponseWriter, r *http.Request) {
 	url := app.spotifyClient.GetAuthCodeURL()
 
 	http.Redirect(w, r, url, http.StatusFound)
 }
 
-func (app *application) callback(w http.ResponseWriter, r *http.Request) {
+func (app *application) spotifyCallback(w http.ResponseWriter, r *http.Request) {
 	err := r.ParseForm()
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -31,5 +31,38 @@ func (app *application) callback(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("Authentication successful!"))
+	w.Write([]byte("Spotify authentication successful!"))
+}
+
+func (app *application) lastFmLogin(w http.ResponseWriter, r *http.Request) {
+	url, err := app.lastfmClient.GetAuthURL()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	http.Redirect(w, r, url, http.StatusFound)
+}
+
+func (app *application) lastFmCallback(w http.ResponseWriter, r *http.Request) {
+	err := r.ParseForm()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	token := r.Form.Get("token")
+	if token == "" {
+		http.Error(w, "Authorization token not found", http.StatusBadRequest)
+		return
+	}
+
+	err = app.lastfmClient.ExchangeTokenForSession(context.Background(), token)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte("Last.fm authentication successful!"))
 }

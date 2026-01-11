@@ -7,6 +7,7 @@ import (
 
 	"github.com/degeens/scrobblet/internal/clients"
 	"github.com/degeens/scrobblet/internal/clients/koito"
+	"github.com/degeens/scrobblet/internal/clients/lastfm"
 	"github.com/degeens/scrobblet/internal/clients/listenbrainz"
 	"github.com/degeens/scrobblet/internal/clients/spotify"
 	"github.com/degeens/scrobblet/internal/sources"
@@ -37,6 +38,9 @@ const (
 	envKoitoURL            = "KOITO_URL"
 	envKoitoToken          = "KOITO_TOKEN"
 	envListenBrainzToken   = "LISTENBRAINZ_TOKEN"
+	envLastFmAPIKey        = "LASTFM_API_KEY"
+	envLastFmSharedSecret  = "LASTFM_SHARED_SECRET"
+	envLastFmRedirectURL   = "LASTFM_REDIRECT_URL"
 )
 
 func loadConfig() (*config, error) {
@@ -81,6 +85,7 @@ func loadClientsConfig(sourceType sources.SourceType, targetType targets.TargetT
 	var spotifyConfig spotify.Config
 	var koitoConfig koito.Config
 	var listenbrainzConfig listenbrainz.Config
+	var lastfmConfig lastfm.Config
 	var err error
 
 	if sourceType == sources.SourceSpotify {
@@ -104,10 +109,18 @@ func loadClientsConfig(sourceType sources.SourceType, targetType targets.TargetT
 		}
 	}
 
+	if targetType == targets.TargetLastFm {
+		lastfmConfig, err = loadLastFmConfig(dataPath)
+		if err != nil {
+			return clients.Config{}, err
+		}
+	}
+
 	return clients.Config{
 		Spotify:      spotifyConfig,
 		Koito:        koitoConfig,
 		ListenBrainz: listenbrainzConfig,
+		LastFm:       lastfmConfig,
 	}, nil
 }
 
@@ -127,7 +140,7 @@ func loadSpotifyConfig(dataPath string) (spotify.Config, error) {
 		return spotify.Config{}, err
 	}
 
-	err = validateRedirectURL(redirectURL)
+	err = validateRedirectURL("/spotify", redirectURL)
 	if err != nil {
 		return spotify.Config{}, err
 	}
@@ -168,6 +181,35 @@ func loadListenBrainzConfig() (listenbrainz.Config, error) {
 	}, nil
 }
 
+func loadLastFmConfig(dataPath string) (lastfm.Config, error) {
+	apiKey, err := getRequiredEnv(envLastFmAPIKey)
+	if err != nil {
+		return lastfm.Config{}, err
+	}
+
+	sharedSecret, err := getRequiredEnv(envLastFmSharedSecret)
+	if err != nil {
+		return lastfm.Config{}, err
+	}
+
+	redirectURL, err := getRequiredEnv(envLastFmRedirectURL)
+	if err != nil {
+		return lastfm.Config{}, err
+	}
+
+	err = validateRedirectURL("/lastfm", redirectURL)
+	if err != nil {
+		return lastfm.Config{}, err
+	}
+
+	return lastfm.Config{
+		APIKey:       apiKey,
+		SharedSecret: sharedSecret,
+		RedirectURL:  redirectURL,
+		DataPath:     dataPath,
+	}, nil
+}
+
 func getEnv(key string, defaultValue string) string {
 	value := os.Getenv(key)
 
@@ -203,18 +245,20 @@ func validateTarget(target string) (targets.TargetType, error) {
 		return targets.TargetKoito, nil
 	case string(targets.TargetListenBrainz):
 		return targets.TargetListenBrainz, nil
+	case string(targets.TargetLastFm):
+		return targets.TargetLastFm, nil
 	default:
-		return "", fmt.Errorf("Invalid target: %s. Valid targets are: %s, %s.", target, targets.TargetKoito, targets.TargetListenBrainz)
+		return "", fmt.Errorf("Invalid target: %s. Valid targets are: %s, %s, %s.", target, targets.TargetKoito, targets.TargetListenBrainz, targets.TargetLastFm)
 	}
 }
 
-func validateRedirectURL(redirectURL string) error {
+func validateRedirectURL(pathPrefix, redirectURL string) error {
 	parsedURL, err := url.Parse(redirectURL)
 	if err != nil {
 		return fmt.Errorf("Invalid redirect URL: %w", err)
 	}
 
-	if parsedURL.Path != "/callback" {
+	if parsedURL.Path != pathPrefix+"/callback" {
 		return fmt.Errorf("Invalid redirect URL path: %s. Path must be /callback.", parsedURL.Path)
 	}
 

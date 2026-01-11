@@ -5,6 +5,7 @@ import (
 
 	"github.com/degeens/scrobblet/internal/clients"
 	"github.com/degeens/scrobblet/internal/clients/koito"
+	"github.com/degeens/scrobblet/internal/clients/lastfm"
 	"github.com/degeens/scrobblet/internal/clients/listenbrainz"
 	"github.com/degeens/scrobblet/internal/common"
 )
@@ -14,6 +15,7 @@ type TargetType string
 const (
 	TargetKoito        TargetType = "Koito"
 	TargetListenBrainz TargetType = "ListenBrainz"
+	TargetLastFm       TargetType = "LastFm"
 )
 
 type Target interface {
@@ -29,6 +31,9 @@ func New(targetType TargetType, clientsConfig clients.Config) (any, Target, erro
 	case TargetListenBrainz:
 		client := listenbrainz.NewClient(clientsConfig.ListenBrainz.Token)
 		return client, NewListenBrainzTarget(client), nil
+	case TargetLastFm:
+		client := lastfm.NewClient(clientsConfig.LastFm.APIKey, clientsConfig.LastFm.SharedSecret, clientsConfig.LastFm.RedirectURL, clientsConfig.LastFm.DataPath)
+		return client, NewLastFmTarget(client), nil
 	default:
 		return nil, nil, fmt.Errorf("Unknown target type: %s", targetType)
 	}

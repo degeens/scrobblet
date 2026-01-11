@@ -36,13 +36,12 @@ func (s *Submitter) Start() {
 
 			slog.Info("Now playing track submitted", track.SlogArgs()...)
 		case trackedTrack := <-s.playedTrackChan:
-			reachedScrobbleTreshold := common.HasReachedScrobbleThreshold(trackedTrack.Duration, trackedTrack.Track.Duration)
-			if !reachedScrobbleTreshold {
-				slog.Info("Track did not reach scrobble threshold, skipping track", trackedTrack.Track.SlogArgs()...)
+			if !ShouldScrobble(trackedTrack.Duration, trackedTrack.Track.Duration) {
+				slog.Info("Track did not meet scrobble rules, skipping track", trackedTrack.Track.SlogArgs()...)
 				continue
 			}
 
-			slog.Info("Track reached scrobble threshold, submitting track", trackedTrack.Track.SlogArgs()...)
+			slog.Info("Track met scrobble rules, submitting track", trackedTrack.Track.SlogArgs()...)
 
 			err := s.target.SubmitPlayedTrack(&trackedTrack)
 			if err != nil {

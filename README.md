@@ -40,16 +40,20 @@ services:
       - SCROBBLET_DATA_PATH=/etc/scrobblet
       - SCROBBLET_SOURCE=Spotify
       - SCROBBLET_TARGET=Koito
+      # Spotify (Required when SCROBBLET_SOURCE=Spotify)
       - SPOTIFY_CLIENT_ID=your_spotify_client_id
       - SPOTIFY_CLIENT_SECRET=your_spotify_client_secret
       - SPOTIFY_REDIRECT_URL=http://127.0.0.1:7276/spotify/callback
+      # Koito (Required when SCROBBLET_TARGET=Koito)
       - KOITO_URL=your_koito_url
       - KOITO_TOKEN=your_koito_token
+      # ListenBrainz (Required when SCROBBLET_TARGET=ListenBrainz)
       - LISTENBRAINZ_TOKEN=your_listenbrainz_token
+      # Last.fm (Required when SCROBBLET_TARGET=LastFm)
       - LASTFM_API_KEY=your_lastfm_api_key
       - LASTFM_SHARED_SECRET=your_lastfm_shared_secret
       - LASTFM_REDIRECT_URL=http://127.0.0.1:7276/lastfm/callback
-
+    restart: unless-stopped
 volumes:
   scrobblet-data:
 ```

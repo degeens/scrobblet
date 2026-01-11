@@ -38,7 +38,6 @@ type ScrobbleResponse struct {
 }
 
 // ScrobbleList handles Last.fm's inconsistent response format
-// (single object vs array depending on count)
 type ScrobbleList []Scrobble
 
 func (s *ScrobbleList) UnmarshalJSON(data []byte) error {
@@ -56,6 +55,7 @@ func (s *ScrobbleList) UnmarshalJSON(data []byte) error {
 	}
 
 	*s = []Scrobble{single}
+
 	return nil
 }
 
@@ -75,9 +75,4 @@ type Scrobble struct {
 type IgnoredMessage struct {
 	Code string `json:"code"`
 	Text string `json:"#text"`
-}
-
-type ErrorResponse struct {
-	Code    int    `json:"error"`
-	Message string `json:"message"`
 }

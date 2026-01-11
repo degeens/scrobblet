@@ -1,8 +1,6 @@
 package targets
 
 import (
-	"strings"
-
 	"github.com/degeens/scrobblet/internal/clients/lastfm"
 	"github.com/degeens/scrobblet/internal/common"
 )
@@ -30,7 +28,8 @@ func (t *LastFmTarget) SubmitPlayedTrack(trackedTrack *common.TrackedTrack) erro
 }
 
 func (t *LastFmTarget) toUpdateNowPlaying(track *common.Track) *lastfm.UpdateNowPlayingRequest {
-	artistName := strings.Join(track.Artists, ", ")
+	// Last.fm does only support one artist
+	artistName := track.Artists[0]
 
 	return &lastfm.UpdateNowPlayingRequest{
 		Artist:   artistName,
@@ -41,7 +40,8 @@ func (t *LastFmTarget) toUpdateNowPlaying(track *common.Track) *lastfm.UpdateNow
 }
 
 func (t *LastFmTarget) toScrobble(trackedTrack *common.TrackedTrack) lastfm.ScrobbleRequest {
-	artistName := strings.Join(trackedTrack.Track.Artists, ", ")
+	// Last.fm does only support one artist
+	artistName := trackedTrack.Track.Artists[0]
 
 	return lastfm.ScrobbleRequest{
 		Artist:    artistName,

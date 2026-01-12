@@ -1,6 +1,7 @@
 package clients
 
 import (
+	"github.com/degeens/scrobblet/internal/clients/csv"
 	"github.com/degeens/scrobblet/internal/clients/koito"
 	"github.com/degeens/scrobblet/internal/clients/lastfm"
 	"github.com/degeens/scrobblet/internal/clients/listenbrainz"
@@ -12,4 +13,5 @@ type Config struct {
 	Koito        koito.Config
 	ListenBrainz listenbrainz.Config
 	LastFm       lastfm.Config
+	CSV          csv.Config
 }

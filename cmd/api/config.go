@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/degeens/scrobblet/internal/clients"
+	"github.com/degeens/scrobblet/internal/clients/csv"
 	"github.com/degeens/scrobblet/internal/clients/koito"
 	"github.com/degeens/scrobblet/internal/clients/lastfm"
 	"github.com/degeens/scrobblet/internal/clients/listenbrainz"
@@ -41,6 +42,7 @@ const (
 	envLastFmAPIKey        = "LASTFM_API_KEY"
 	envLastFmSharedSecret  = "LASTFM_SHARED_SECRET"
 	envLastFmRedirectURL   = "LASTFM_REDIRECT_URL"
+	envCSVFilePath         = "CSV_FILE_PATH"
 )
 
 func loadConfig() (*config, error) {
@@ -86,6 +88,7 @@ func loadClientsConfig(sourceType sources.SourceType, targetType targets.TargetT
 	var koitoConfig koito.Config
 	var listenbrainzConfig listenbrainz.Config
 	var lastfmConfig lastfm.Config
+	var csvConfig csv.Config
 	var err error
 
 	if sourceType == sources.SourceSpotify {
@@ -116,11 +119,19 @@ func loadClientsConfig(sourceType sources.SourceType, targetType targets.TargetT
 		}
 	}
 
+	if targetType == targets.TargetCSV {
+		csvConfig, err = loadCSVConfig(dataPath)
+		if err != nil {
+			return clients.Config{}, err
+		}
+	}
+
 	return clients.Config{
 		Spotify:      spotifyConfig,
 		Koito:        koitoConfig,
 		ListenBrainz: listenbrainzConfig,
 		LastFm:       lastfmConfig,
+		CSV:          csvConfig,
 	}, nil
 }
 
@@ -210,6 +221,14 @@ func loadLastFmConfig(dataPath string) (lastfm.Config, error) {
 	}, nil
 }
 
+func loadCSVConfig(dataPath string) (csv.Config, error) {
+	filePath := getEnv(envCSVFilePath, dataPath+"/scrobbles.csv")
+
+	return csv.Config{
+		FilePath: filePath,
+	}, nil
+}
+
 func getEnv(key string, defaultValue string) string {
 	value := os.Getenv(key)
 
@@ -247,8 +266,10 @@ func validateTarget(target string) (targets.TargetType, error) {
 		return targets.TargetListenBrainz, nil
 	case string(targets.TargetLastFm):
 		return targets.TargetLastFm, nil
+	case string(targets.TargetCSV):
+		return targets.TargetCSV, nil
 	default:
-		return "", fmt.Errorf("Invalid target: %s. Valid targets are: %s, %s, %s.", target, targets.TargetKoito, targets.TargetListenBrainz, targets.TargetLastFm)
+		return "", fmt.Errorf("Invalid target: %s. Valid targets are: %s, %s, %s, %s.", target, targets.TargetKoito, targets.TargetListenBrainz, targets.TargetLastFm, targets.TargetCSV)
 	}
 }
 

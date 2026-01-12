@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/degeens/scrobblet/internal/clients"
+	"github.com/degeens/scrobblet/internal/clients/csv"
 	"github.com/degeens/scrobblet/internal/clients/koito"
 	"github.com/degeens/scrobblet/internal/clients/lastfm"
 	"github.com/degeens/scrobblet/internal/clients/listenbrainz"
@@ -16,6 +17,7 @@ const (
 	TargetKoito        TargetType = "Koito"
 	TargetListenBrainz TargetType = "ListenBrainz"
 	TargetLastFm       TargetType = "LastFm"
+	TargetCSV          TargetType = "CSV"
 )
 
 type Target interface {
@@ -34,6 +36,9 @@ func New(targetType TargetType, clientsConfig clients.Config) (any, Target, erro
 	case TargetLastFm:
 		client := lastfm.NewClient(clientsConfig.LastFm.APIKey, clientsConfig.LastFm.SharedSecret, clientsConfig.LastFm.RedirectURL, clientsConfig.LastFm.DataPath)
 		return client, NewLastFmTarget(client), nil
+	case TargetCSV:
+		client := csv.NewClient(clientsConfig.CSV.FilePath)
+		return client, NewCSVTarget(client), nil
 	default:
 		return nil, nil, fmt.Errorf("Unknown target type: %s", targetType)
 	}

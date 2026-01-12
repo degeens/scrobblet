@@ -19,6 +19,7 @@ Targets:
 - Koito
 - ListenBrainz
 - Last.fm
+- CSV
 
 More sources and targets can be easily added! Feel free to [create a pull request](https://github.com/degeens/scrobblet/pulls) with your implementation or [open an issue](https://github.com/degeens/scrobblet/issues) to request a new integration.
 
@@ -53,6 +54,8 @@ services:
       - LASTFM_API_KEY=your_lastfm_api_key
       - LASTFM_SHARED_SECRET=your_lastfm_shared_secret
       - LASTFM_REDIRECT_URL=http://127.0.0.1:7276/lastfm/callback
+      # CSV (Optional when SCROBBLET_TARGET=CSV)
+      - CSV_FILE_PATH=/etc/scrobblet/scrobbles.csv
     restart: unless-stopped
 volumes:
   scrobblet-data:
@@ -137,6 +140,23 @@ To set up Last.fm:
 4. Copy the API key and shared secret
 5. Start Scrobblet with the API key and shared secret configured
 6. Visit `http://localhost:7276/lastfm/login` to authenticate
+
+### CSV Configuration
+
+| Variable | Required | Default | Description |
+|----------|----------|---------|-------------|
+| `CSV_FILE_PATH` | No | `${SCROBBLET_DATA_PATH}/scrobbles.csv` | Path to the CSV file where scrobbles will be written |
+
+*Required only when `SCROBBLET_TARGET=CSV`
+
+The CSV target writes completed scrobbles to a CSV file with the following format:
+- **Artist(s)**: Multiple artists joined with ", "
+- **Title**: Track title
+- **Album**: Album name
+- **Started At**: ISO 8601 timestamp when tracking started
+- **Ended At**: ISO 8601 timestamp when tracking ended
+
+The CSV file is created automatically with headers on the first scrobble. Subsequent scrobbles are appended to the file.
 
 ## License
 

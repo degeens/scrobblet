@@ -51,12 +51,12 @@ func (c *Client) SubmitListens(request *SubmitListens) error {
 
 	body, err := io.ReadAll(res.Body)
 	if err != nil {
-		return fmt.Errorf("Failed to read response body: %w", err)
+		return fmt.Errorf("failed to read response body: %w", err)
 	}
 
 	if res.StatusCode == http.StatusOK {
 		return nil
 	}
 
-	return fmt.Errorf("Failed to submit listens to ListenBrainz (HTTP %d): %s", res.StatusCode, string(body))
+	return fmt.Errorf("failed to submit listens to ListenBrainz (HTTP %d): %s", res.StatusCode, string(body))
 }

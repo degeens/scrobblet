@@ -75,7 +75,7 @@ func (c *Client) ExchangeTokenForSession(ctx context.Context, token string) erro
 	}
 
 	if getSessionResp.Error != nil {
-		return fmt.Errorf("Failed to get session from Last.fm. API error (code %d): %s", *getSessionResp.Error, *getSessionResp.Message)
+		return fmt.Errorf("failed to get session from Last.fm. API error (code %d): %s", *getSessionResp.Error, *getSessionResp.Message)
 	}
 
 	c.session = &session{Key: getSessionResp.Session.Key}

@@ -243,7 +243,7 @@ func getRequiredEnv(key string) (string, error) {
 	value := os.Getenv(key)
 
 	if value == "" {
-		return "", fmt.Errorf("Required environment variable %s is not set", key)
+		return "", fmt.Errorf("required environment variable %s is not set", key)
 	}
 
 	return value, nil
@@ -254,7 +254,7 @@ func validateSource(source string) (sources.SourceType, error) {
 	case string(sources.SourceSpotify):
 		return sources.SourceSpotify, nil
 	default:
-		return "", fmt.Errorf("Invalid source: %s. Valid sources are: %s.", source, sources.SourceSpotify)
+		return "", fmt.Errorf("invalid source: %s. Valid sources are: %s", source, sources.SourceSpotify)
 	}
 }
 
@@ -269,18 +269,18 @@ func validateTarget(target string) (targets.TargetType, error) {
 	case string(targets.TargetCSV):
 		return targets.TargetCSV, nil
 	default:
-		return "", fmt.Errorf("Invalid target: %s. Valid targets are: %s, %s, %s, %s.", target, targets.TargetKoito, targets.TargetListenBrainz, targets.TargetLastFm, targets.TargetCSV)
+		return "", fmt.Errorf("invalid target: %s. Valid targets are: %s, %s, %s, %s", target, targets.TargetKoito, targets.TargetListenBrainz, targets.TargetLastFm, targets.TargetCSV)
 	}
 }
 
 func validateRedirectURL(pathPrefix, redirectURL string) error {
 	parsedURL, err := url.Parse(redirectURL)
 	if err != nil {
-		return fmt.Errorf("Invalid redirect URL: %w", err)
+		return fmt.Errorf("invalid redirect URL: %w", err)
 	}
 
 	if parsedURL.Path != pathPrefix+"/callback" {
-		return fmt.Errorf("Invalid redirect URL path: %s. Path must be /callback.", parsedURL.Path)
+		return fmt.Errorf("invalid redirect URL path: %s. Path must be /callback", parsedURL.Path)
 	}
 
 	return nil

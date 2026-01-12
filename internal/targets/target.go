@@ -40,6 +40,6 @@ func New(targetType TargetType, clientsConfig clients.Config) (any, Target, erro
 		client := csv.NewClient(clientsConfig.CSV.FilePath)
 		return client, NewCSVTarget(client), nil
 	default:
-		return nil, nil, fmt.Errorf("Unknown target type: %s", targetType)
+		return nil, nil, fmt.Errorf("unknown target type: %s", targetType)
 	}
 }

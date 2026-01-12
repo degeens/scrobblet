@@ -31,6 +31,6 @@ func New(sourceType SourceType, clientsConfig clients.Config) (any, Source, erro
 		client := spotify.NewClient(clientsConfig.Spotify.ClientID, clientsConfig.Spotify.ClientSecret, clientsConfig.Spotify.RedirectURL, clientsConfig.Spotify.DataPath)
 		return client, NewSpotifySource(client), nil
 	default:
-		return nil, nil, fmt.Errorf("Unknown source type: %s", sourceType)
+		return nil, nil, fmt.Errorf("unknown source type: %s", sourceType)
 	}
 }

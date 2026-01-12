@@ -47,7 +47,7 @@ func NewClient(apiKey, sharedSecret, redirectURL, dataPath string) *Client {
 
 func (c *Client) UpdateNowPlaying(request *UpdateNowPlayingRequest) error {
 	if c.session == nil {
-		return errors.New("Not authenticated with Last.fm, log in via /lastfm/login")
+		return errors.New("not authenticated with Last.fm, log in via /lastfm/login")
 	}
 
 	params := map[string]string{
@@ -76,7 +76,7 @@ func (c *Client) UpdateNowPlaying(request *UpdateNowPlayingRequest) error {
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return fmt.Errorf("Failed to read response body: %w", err)
+		return fmt.Errorf("failed to read response body: %w", err)
 	}
 
 	var updateNowPlayingResp UpdateNowPlayingResponse
@@ -85,11 +85,11 @@ func (c *Client) UpdateNowPlaying(request *UpdateNowPlayingRequest) error {
 	}
 
 	if updateNowPlayingResp.Error != nil {
-		return fmt.Errorf("Failed to update now playing track on Last.fm. API error (code %d): %s", *updateNowPlayingResp.Error, *updateNowPlayingResp.Message)
+		return fmt.Errorf("failed to update now playing track on Last.fm. API error (code %d): %s", *updateNowPlayingResp.Error, *updateNowPlayingResp.Message)
 	}
 
 	if updateNowPlayingResp.NowPlaying.IgnoredMessage.Code != "0" {
-		return fmt.Errorf("Failed to update now playing track on Last.fm. Track ignored (code %s): %s", updateNowPlayingResp.NowPlaying.IgnoredMessage.Code, updateNowPlayingResp.NowPlaying.IgnoredMessage.Text)
+		return fmt.Errorf("failed to update now playing track on Last.fm. Track ignored (code %s): %s", updateNowPlayingResp.NowPlaying.IgnoredMessage.Code, updateNowPlayingResp.NowPlaying.IgnoredMessage.Text)
 	}
 
 	return nil
@@ -97,14 +97,14 @@ func (c *Client) UpdateNowPlaying(request *UpdateNowPlayingRequest) error {
 
 func (c *Client) Scrobble(requests []ScrobbleRequest) error {
 	if c.session == nil {
-		return errors.New("Not authenticated with Last.fm, log in via /lastfm/login")
+		return errors.New("not authenticated with Last.fm, log in via /lastfm/login")
 	}
 
 	if len(requests) == 0 {
-		return fmt.Errorf("No scrobbles to submit")
+		return fmt.Errorf("no scrobbles to submit")
 	}
 	if len(requests) > 50 {
-		return fmt.Errorf("Cannot submit more than 50 scrobbles per batch")
+		return fmt.Errorf("cannot submit more than 50 scrobbles per batch")
 	}
 
 	params := map[string]string{
@@ -142,7 +142,7 @@ func (c *Client) Scrobble(requests []ScrobbleRequest) error {
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return fmt.Errorf("Failed to read response body: %w", err)
+		return fmt.Errorf("failed to read response body: %w", err)
 	}
 
 	var scrobbleResp ScrobbleResponse
@@ -151,7 +151,7 @@ func (c *Client) Scrobble(requests []ScrobbleRequest) error {
 	}
 
 	if scrobbleResp.Error != nil {
-		return fmt.Errorf("Failed to submit scrobble to Last.fm. API error (code %d): %s", *scrobbleResp.Error, *scrobbleResp.Message)
+		return fmt.Errorf("failed to submit scrobble to Last.fm. API error (code %d): %s", *scrobbleResp.Error, *scrobbleResp.Message)
 	}
 
 	if scrobbleResp.Scrobbles.Attr.Ignored > 0 {
@@ -163,7 +163,7 @@ func (c *Client) Scrobble(requests []ScrobbleRequest) error {
 		}
 
 		if len(ignoredReasons) > 0 {
-			return fmt.Errorf("Failed to submit scrobble to Last.fm. %d track(s) ignored: %s", scrobbleResp.Scrobbles.Attr.Ignored, strings.Join(ignoredReasons, ", "))
+			return fmt.Errorf("failed to submit scrobble to Last.fm. %d track(s) ignored: %s", scrobbleResp.Scrobbles.Attr.Ignored, strings.Join(ignoredReasons, ", "))
 		}
 	}
 

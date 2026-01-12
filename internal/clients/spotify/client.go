@@ -69,7 +69,7 @@ func (c *Client) GetCurrentlyPlayingTrack() (*CurrentlyPlayingTrack, error) {
 
 	body, err := io.ReadAll(res.Body)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to read response body: %w", err)
+		return nil, fmt.Errorf("failed to read response body: %w", err)
 	}
 
 	switch res.StatusCode {
@@ -82,6 +82,6 @@ func (c *Client) GetCurrentlyPlayingTrack() (*CurrentlyPlayingTrack, error) {
 	case http.StatusNoContent:
 		return nil, nil
 	default:
-		return nil, fmt.Errorf("Failed to get currently playing track from Spotify (HTTP %d): %s", res.StatusCode, string(body))
+		return nil, fmt.Errorf("failed to get currently playing track from Spotify (HTTP %d): %s", res.StatusCode, string(body))
 	}
 }

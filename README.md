@@ -1,28 +1,20 @@
+<p align="center">
+  <img src="scrobbling-gopher.png" alt="Scrobbling Gopher" height="275"/>
+</p>
+
 # Scrobblet
 
 ![Go version](https://img.shields.io/github/go-mod/go-version/degeens/scrobblet?label=go)
 [![Go Report](https://goreportcard.com/badge/github.com/degeens/scrobblet)](https://goreportcard.com/report/github.com/degeens/scrobblet)
 [![Release](https://img.shields.io/github/v/release/degeens/scrobblet?include_prereleases)](https://github.com/degeens/scrobblet/releases)
-[![Docker Pulls](https://img.shields.io/docker/pulls/degeens/scrobblet)](https://hub.docker.com/r/degeens/scrobblet)
 [![License](https://img.shields.io/github/license/degeens/scrobblet)](LICENSE)
-
+[![Docker Pulls](https://img.shields.io/docker/pulls/degeens/scrobblet)](https://hub.docker.com/r/degeens/scrobblet)
 
 Scrobblet is a lightweight scrobbler for self-hosters. It tracks your listening activity from a music source and scrobbles it to your preferred target, and is easily extensible with new integrations.
 
+Currently, Scrobblet supports **Spotify** as a source and can scrobble to **Koito**, **ListenBrainz**, **Last.fm**, or **CSV**. More sources and targets can be easily added. Feel free to [create a pull request](https://github.com/degeens/scrobblet/pulls) with your implementation or [open an issue](https://github.com/degeens/scrobblet/issues) to request a new integration.
+
 > **⚠️ Warning**: This project is in early stages of development. Features and APIs may change without notice.
-
-## Supported Sources and Targets
-
-Sources:
-- Spotify
-
-Targets:
-- Koito
-- ListenBrainz
-- Last.fm
-- CSV
-
-More sources and targets can be easily added! Feel free to [create a pull request](https://github.com/degeens/scrobblet/pulls) with your implementation or [open an issue](https://github.com/degeens/scrobblet/issues) to request a new integration.
 
 ## Getting Started
 
@@ -70,4 +62,4 @@ For detailed configuration instructions, see the [Configuration Guide](docs/conf
 
 ## License
 
-See [LICENSE](LICENSE) file for details.
+This project is licensed under the GNU General Public License v3.0. See the [LICENSE](LICENSE) file for details.

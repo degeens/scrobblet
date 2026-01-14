@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="scrobbling-gopher.png" alt="Scrobbling Gopher" height="275"/>
+  <img src="logo.png" alt="Scrobbling gopher" height="275"/>
 </p>
 
 # Scrobblet

@@ -5,11 +5,11 @@ All configuration is done through environment variables.
 ## Table of Contents
 - [General Configuration](#general-configuration)
 - [Client Configuration](#client-configuration)
-  - [Spotify Configuration](#spotify-configuration)
-  - [Koito Configuration](#koito-configuration)
-  - [ListenBrainz Configuration](#listenbrainz-configuration)
-  - [Last.fm Configuration](#lastfm-configuration)
-  - [CSV Configuration](#csv-configuration)
+  - [Spotify](#spotify)
+  - [Koito](#koito)
+  - [ListenBrainz](#listenbrainz)
+  - [Last.fm](#lastfm)
+  - [CSV](#csv)
 
 ## General Configuration
 
@@ -22,7 +22,7 @@ All configuration is done through environment variables.
 
 ## Client Configuration
 
-### Spotify Configuration
+### Spotify
 
 | Variable | Required | Default | Description |
 |----------|----------|---------|-------------|
@@ -40,7 +40,7 @@ To set up Spotify:
 5. Start Scrobblet with the client ID and client secret configured
 6. Visit `http://localhost:7276/spotify/login` to authenticate
 
-### Koito Configuration
+### Koito
 
 | Variable | Required | Default | Description |
 |----------|----------|---------|-------------|
@@ -56,7 +56,7 @@ To set up Koito:
 4. Generate a new API key
 5. Start Scrobblet with the API key configured
 
-### ListenBrainz Configuration
+### ListenBrainz
 
 | Variable | Required | Default | Description |
 |----------|----------|---------|-------------|
@@ -69,7 +69,7 @@ To set up ListenBrainz:
 2. Copy your user token
 3. Start Scrobblet with the user token configured
 
-### Last.fm Configuration
+### Last.fm
 
 | Variable | Required | Default | Description |
 |----------|----------|---------|-------------|
@@ -87,7 +87,7 @@ To set up Last.fm:
 5. Start Scrobblet with the API key and shared secret configured
 6. Visit `http://localhost:7276/lastfm/login` to authenticate
 
-### CSV Configuration
+### CSV
 
 | Variable | Required | Default | Description |
 |----------|----------|---------|-------------|

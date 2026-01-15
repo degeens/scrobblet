@@ -1,0 +1,12 @@
+- [X] Add target CSV
+- [] Add target Majola
+- [] Support custom Listenbrainz URL (Koitio, Majola, ListenBrainz, ...) (& think about what to do with Koito, Majola integration)
+- [] Proper code quality checks on push (Does it build? Do all tests pass? Are there vulnerabilities? golangci-lint/staticcheck) + add badge(s)
+- [] Check targets for other data to send
+- [] Unit test tracker
+- [] Unit test submitter
+- [] Add detailed docs for (1) self-hosters and (2) contributors
+- [] v1.0.0 release
+- [] Config UI?
+- [] Support scrobbling to multiple targets
+- [] Support scrobbling in batch

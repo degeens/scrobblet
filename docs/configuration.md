@@ -7,6 +7,7 @@ All configuration is done through environment variables.
 - [Client Configuration](#client-configuration)
   - [Spotify](#spotify)
   - [Koito](#koito)
+  - [Maloja](#maloja)
   - [ListenBrainz](#listenbrainz)
   - [Last.fm](#lastfm)
   - [CSV](#csv)
@@ -18,7 +19,7 @@ All configuration is done through environment variables.
 | `SCROBBLET_PORT` | No | `7276` | Port the API server listens on |
 | `SCROBBLET_DATA_PATH` | No | `/etc/scrobblet` | Path where application data is stored |
 | `SCROBBLET_SOURCE` | Yes | - | Source to track. Options: `Spotify` |
-| `SCROBBLET_TARGET` | Yes | - | Target to scrobble to. Options: `Koito`, `ListenBrainz`, `LastFm`, `CSV` |
+| `SCROBBLET_TARGET` | Yes | - | Target to scrobble to. Options: `Koito`, `Maloja`, `ListenBrainz`, `LastFm`, `CSV` |
 
 ## Client Configuration
 
@@ -55,6 +56,21 @@ To set up Koito:
 3. Go to Settings → API Keys
 4. Generate a new API key
 5. Start Scrobblet with the API key configured
+
+### Maloja
+
+| Variable | Required | Default | Description |
+|----------|----------|---------|-------------|
+| `MALOJA_URL` | Yes* | - | URL of your Maloja instance (e.g., `http://localhost:42010`) |
+| `MALOJA_TOKEN` | Yes* | - | Your Maloja API key |
+
+*Required only when `SCROBBLET_TARGET=Maloja`
+
+To set up Maloja:
+1. Access your Maloja instance
+2. Go to Settings → API Keys
+3. Generate a new API key
+4. Start Scrobblet with the API key configured
 
 ### ListenBrainz
 

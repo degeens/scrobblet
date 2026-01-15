@@ -99,7 +99,7 @@ func loadClientsConfig(sourceType sources.SourceType, targetType targets.TargetT
 		}
 	}
 
-	if targetType == targets.TargetKoito || targetType == targets.TargetListenBrainz || targetType == targets.TargetMaloja {
+	if targetType == targets.TargetKoito || targetType == targets.TargetMaloja || targetType == targets.TargetListenBrainz {
 		listenbrainzConfig, err = loadListenBrainzConfig(targetType)
 		if err != nil {
 			return clients.Config{}, err
@@ -158,44 +158,38 @@ func loadSpotifyConfig(dataPath string) (spotify.Config, error) {
 }
 
 func loadListenBrainzConfig(targetType targets.TargetType) (listenbrainz.Config, error) {
-	var token, customURL string
+	var token, baseURL string
 	var err error
 
 	switch targetType {
 	case targets.TargetKoito:
-		// Use Koito-specific environment variables
 		token, err = getRequiredEnv(envKoitoToken)
 		if err != nil {
 			return listenbrainz.Config{}, err
 		}
-		baseURL, err := getRequiredEnv(envKoitoURL)
+		baseURL, err = getRequiredEnv(envKoitoURL)
 		if err != nil {
 			return listenbrainz.Config{}, err
 		}
-		customURL = baseURL + "/api/k"
-	case targets.TargetMajola:
-		// Use Majola-specific environment variables
-		token, err = getRequiredEnv(envMajolaToken)
+	case targets.TargetMaloja:
+		token, err = getRequiredEnv(envMalojaToken)
 		if err != nil {
 			return listenbrainz.Config{}, err
 		}
-		baseURL, err := getRequiredEnv(envMajolaURL)
+		baseURL, err = getRequiredEnv(envMalojaURL)
 		if err != nil {
 			return listenbrainz.Config{}, err
 		}
-		customURL = baseURL + "/a/"
 	default:
-		// Use ListenBrainz environment variables
 		token, err = getRequiredEnv(envListenBrainzToken)
 		if err != nil {
 			return listenbrainz.Config{}, err
 		}
-		// Optional: custom base URL for ListenBrainz-compatible APIs
-		customURL = os.Getenv(envListenBrainzURL)
+		baseURL = getEnv(envListenBrainzURL, "")
 	}
 
 	return listenbrainz.Config{
-		URL:   customURL,
+		URL:   baseURL,
 		Token: token,
 	}, nil
 }
@@ -270,16 +264,16 @@ func validateTarget(target string) (targets.TargetType, error) {
 	switch target {
 	case string(targets.TargetKoito):
 		return targets.TargetKoito, nil
-	case string(targets.TargetListenBrainz):
-		return targets.TargetListenBrainz, nil
 	case string(targets.TargetMaloja):
 		return targets.TargetMaloja, nil
+	case string(targets.TargetListenBrainz):
+		return targets.TargetListenBrainz, nil
 	case string(targets.TargetLastFm):
 		return targets.TargetLastFm, nil
 	case string(targets.TargetCSV):
 		return targets.TargetCSV, nil
 	default:
-		return "", fmt.Errorf("invalid target: %s. Valid targets are: %s, %s, %s, %s, %s", target, targets.TargetKoito, targets.TargetListenBrainz, targets.TargetMaloja, targets.TargetLastFm, targets.TargetCSV)
+		return "", fmt.Errorf("invalid target: %s. Valid targets are: %s, %s, %s, %s, %s", target, targets.TargetKoito, targets.TargetMaloja, targets.TargetListenBrainz, targets.TargetLastFm, targets.TargetCSV)
 	}
 }
 

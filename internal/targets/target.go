@@ -14,8 +14,8 @@ type TargetType string
 
 const (
 	TargetKoito        TargetType = "Koito"
-	TargetListenBrainz TargetType = "ListenBrainz"
 	TargetMaloja       TargetType = "Maloja"
+	TargetListenBrainz TargetType = "ListenBrainz"
 	TargetLastFm       TargetType = "LastFm"
 	TargetCSV          TargetType = "CSV"
 )
@@ -31,11 +31,11 @@ func New(targetType TargetType, clientsConfig clients.Config) (any, Target, erro
 		// Koito uses ListenBrainz-compatible API with custom base URL
 		client := listenbrainz.NewClient(clientsConfig.ListenBrainz.Token, clientsConfig.ListenBrainz.URL)
 		return client, NewListenBrainzTarget(client), nil
-	case TargetListenBrainz:
-		client := listenbrainz.NewClient(clientsConfig.ListenBrainz.Token, clientsConfig.ListenBrainz.URL)
-		return client, NewListenBrainzTarget(client), nil
 	case TargetMaloja:
 		// Maloja uses ListenBrainz-compatible API with custom base URL
+		client := listenbrainz.NewClient(clientsConfig.ListenBrainz.Token, clientsConfig.ListenBrainz.URL)
+		return client, NewListenBrainzTarget(client), nil
+	case TargetListenBrainz:
 		client := listenbrainz.NewClient(clientsConfig.ListenBrainz.Token, clientsConfig.ListenBrainz.URL)
 		return client, NewListenBrainzTarget(client), nil
 	case TargetLastFm:

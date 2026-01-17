@@ -171,12 +171,20 @@ func loadListenBrainzConfig(targetType targets.TargetType) (listenbrainz.Config,
 		if err != nil {
 			return listenbrainz.Config{}, err
 		}
+		baseURL, err = setURLPath(baseURL, "/apis/listenbrainz")
+		if err != nil {
+			return listenbrainz.Config{}, err
+		}
 	case targets.TargetMaloja:
 		token, err = getRequiredEnv(envMalojaToken)
 		if err != nil {
 			return listenbrainz.Config{}, err
 		}
 		baseURL, err = getRequiredEnv(envMalojaURL)
+		if err != nil {
+			return listenbrainz.Config{}, err
+		}
+		baseURL, err = setURLPath(baseURL, "/apis/listenbrainz")
 		if err != nil {
 			return listenbrainz.Config{}, err
 		}
@@ -288,4 +296,17 @@ func validateRedirectURL(pathPrefix, redirectURL string) error {
 	}
 
 	return nil
+}
+
+func setURLPath(rawURL, path string) (string, error) {
+	parsedURL, err := url.Parse(rawURL)
+	if err != nil {
+		return "", fmt.Errorf("invalid URL: %w", err)
+	}
+
+	// Clear any existing path and set to the provided path
+	parsedURL.Path = path
+	parsedURL.RawPath = ""
+
+	return parsedURL.String(), nil
 }

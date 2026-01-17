@@ -19,7 +19,7 @@ All configuration is done through environment variables.
 | `SCROBBLET_PORT` | No | `7276` | Port the API server listens on |
 | `SCROBBLET_DATA_PATH` | No | `/etc/scrobblet` | Path where application data is stored |
 | `SCROBBLET_SOURCE` | Yes | - | Source to track. Options: `Spotify` |
-| `SCROBBLET_TARGET` | Yes | - | Target to scrobble to. Options: `Koito`, `Maloja`, `ListenBrainz`, `LastFm`, `CSV` |
+| `SCROBBLET_TARGET` | Yes | - | Target to scrobble to. Options: `LastFm`, `ListenBrainz`, `Maloja`, `Koito`, `CSV` |
 
 ## Client Configuration
 

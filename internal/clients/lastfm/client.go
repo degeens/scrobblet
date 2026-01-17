@@ -32,7 +32,7 @@ type Client struct {
 func NewClient(apiKey, sharedSecret, redirectURL, dataPath string) *Client {
 	c := &Client{
 		baseURL:      baseURL,
-		httpClient:   &http.Client{Timeout: 5 * time.Second},
+		httpClient:   &http.Client{Timeout: 15 * time.Second},
 		apiKey:       apiKey,
 		sharedSecret: sharedSecret,
 		redirectURL:  redirectURL,

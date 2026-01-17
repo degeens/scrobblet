@@ -63,6 +63,7 @@ To set up Last.fm:
 
 | Variable | Required | Default | Description |
 |----------|----------|---------|-------------|
+| `LISTENBRAINZ_URL` | No | `https://api.listenbrainz.org` | URL of a ListenBrainz-compatible service |
 | `LISTENBRAINZ_TOKEN` | Yes* | - | Your ListenBrainz user token |
 
 *Required only when `SCROBBLET_TARGET=ListenBrainz`
@@ -71,6 +72,8 @@ To set up ListenBrainz:
 1. Go to [ListenBrainz User Settings](https://listenbrainz.org/settings/)
 2. Copy your user token
 3. Start Scrobblet with the user token configured
+
+**ListenBrainz-compatible API support**: Scrobblet can scrobble to any service that implements the ListenBrainz API specification. This includes the official ListenBrainz service, self-hosted ListenBrainz instances, or any other compatible implementation. Simply set `LISTENBRAINZ_URL` to point to your preferred service.
 
 ### Maloja
 

@@ -1,0 +1,37 @@
+# Development Docker Compose - Maloja Target
+# Usage: docker compose -f docker-compose.dev.maloja.yml up -d --build
+
+# This configuration runs Scrobblet alongside a Maloja instance.
+# Scrobblet is built locally and sends scrobbles to Maloja.
+
+# Access Scrobblet at http://localhost:7276
+# Access Maloja at http://localhost:42010
+
+services:
+  scrobblet:
+    container_name: scrobblet
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - scrobblet-data:/etc/scrobblet
+    ports:
+      - 7276:7276
+    environment:
+      - SCROBBLET_SOURCE=Spotify
+      - SCROBBLET_TARGET=Maloja
+    env_file:
+      - .env
+    depends_on:
+      - maloja
+    restart: unless-stopped
+
+  maloja:
+    image: krateng/maloja:latest
+    container_name: maloja
+    ports:
+      - 42010:42010
+    restart: unless-stopped
+
+volumes:
+  scrobblet-data:

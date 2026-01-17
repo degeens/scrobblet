@@ -1,0 +1,27 @@
+# Development Docker Compose - CSV Target
+# Usage: docker compose -f docker-compose.dev.yml up -d --build
+
+# This configuration builds Scrobblet locally and uses CSV as the scrobbling target.
+# Scrobbles are written to /etc/scrobblet/scrobbles.csv by default.
+
+# Access Scrobblet at http://localhost:7276
+
+services:
+  scrobblet:
+    container_name: scrobblet
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - scrobblet-data:/etc/scrobblet
+    ports:
+      - 7276:7276
+    environment:
+      - SCROBBLET_SOURCE=Spotify
+      - SCROBBLET_TARGET=CSV
+    env_file:
+      - .env
+    restart: unless-stopped
+
+volumes:
+  scrobblet-data:

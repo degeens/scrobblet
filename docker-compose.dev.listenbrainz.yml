@@ -1,0 +1,28 @@
+# Development Docker Compose - ListenBrainz Target
+# Usage: docker compose -f docker-compose.dev.listenbrainz.yml up -d --build
+
+# This configuration builds scrobblet locally and uses ListenBrainz as the scrobbling target.
+# Scrobblet sends scrobbles to the public ListenBrainz API (https://api.listenbrainz.org).
+
+# Access Scrobblet at http://localhost:7276
+# Access ListenBrainz at https://listenbrainz.org
+
+services:
+  scrobblet:
+    container_name: scrobblet
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - scrobblet-data:/etc/scrobblet
+    ports:
+      - 7276:7276
+    environment:
+      - SCROBBLET_SOURCE=Spotify
+      - SCROBBLET_TARGET=ListenBrainz
+    env_file:
+      - .env
+    restart: unless-stopped
+
+volumes:
+  scrobblet-data:

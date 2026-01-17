@@ -1,0 +1,57 @@
+# Development Docker Compose - Koito Target
+# Usage: docker compose -f docker-compose.dev.koito.yml up -d --build
+
+# This configuration runs Scrobblet alongside a Koito instance.
+# Scrobblet is built locally and sends scrobbles to Koito.
+
+# Access Scrobblet at http://localhost:7276
+# Access Koito at http://localhost:4110
+
+services:
+  scrobblet:
+    container_name: scrobblet
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - scrobblet-data:/etc/scrobblet
+    ports:
+      - 7276:7276
+    environment:
+      - SCROBBLET_SOURCE=Spotify
+      - SCROBBLET_TARGET=Koito
+    env_file:
+      - .env
+    depends_on:
+      - koito
+    restart: unless-stopped
+
+  koito:
+    image: gabehf/koito:latest
+    container_name: koito
+    volumes:
+      - koito-data:/etc/koito
+    ports:
+      - "4110:4110"
+    environment:
+      - KOITO_DATABASE_URL=postgres://koito:password@postgres:5432/koito
+      - KOITO_ALLOWED_HOSTS=koito:4110,localhost:4110
+    depends_on:
+      - postgres
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:16
+    container_name: postgres
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: koito
+      POSTGRES_USER: koito
+      POSTGRES_PASSWORD: password
+    restart: unless-stopped
+
+volumes:
+  scrobblet-data:
+  koito-data:
+  postgres-data:

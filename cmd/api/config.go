@@ -7,7 +7,6 @@ import (
 
 	"github.com/degeens/scrobblet/internal/clients"
 	"github.com/degeens/scrobblet/internal/clients/csv"
-	"github.com/degeens/scrobblet/internal/clients/koito"
 	"github.com/degeens/scrobblet/internal/clients/lastfm"
 	"github.com/degeens/scrobblet/internal/clients/listenbrainz"
 	"github.com/degeens/scrobblet/internal/clients/spotify"
@@ -38,6 +37,9 @@ const (
 	envSpotifyRedirectURL  = "SPOTIFY_REDIRECT_URL"
 	envKoitoURL            = "KOITO_URL"
 	envKoitoToken          = "KOITO_TOKEN"
+	envMalojaURL           = "MALOJA_URL"
+	envMalojaToken         = "MALOJA_TOKEN"
+	envListenBrainzURL     = "LISTENBRAINZ_URL"
 	envListenBrainzToken   = "LISTENBRAINZ_TOKEN"
 	envLastFmAPIKey        = "LASTFM_API_KEY"
 	envLastFmSharedSecret  = "LASTFM_SHARED_SECRET"
@@ -85,8 +87,7 @@ func loadConfig() (*config, error) {
 
 func loadClientsConfig(sourceType sources.SourceType, targetType targets.TargetType, dataPath string) (clients.Config, error) {
 	var spotifyConfig spotify.Config
-	var koitoConfig koito.Config
-	var listenbrainzConfig listenbrainz.Config
+	var listenBrainzConfig listenbrainz.Config
 	var lastfmConfig lastfm.Config
 	var csvConfig csv.Config
 	var err error
@@ -98,15 +99,8 @@ func loadClientsConfig(sourceType sources.SourceType, targetType targets.TargetT
 		}
 	}
 
-	if targetType == targets.TargetKoito {
-		koitoConfig, err = loadKoitoConfig()
-		if err != nil {
-			return clients.Config{}, err
-		}
-	}
-
-	if targetType == targets.TargetListenBrainz {
-		listenbrainzConfig, err = loadListenBrainzConfig()
+	if targetType == targets.TargetKoito || targetType == targets.TargetMaloja || targetType == targets.TargetListenBrainz {
+		listenBrainzConfig, err = loadListenBrainzConfig(targetType)
 		if err != nil {
 			return clients.Config{}, err
 		}
@@ -128,8 +122,7 @@ func loadClientsConfig(sourceType sources.SourceType, targetType targets.TargetT
 
 	return clients.Config{
 		Spotify:      spotifyConfig,
-		Koito:        koitoConfig,
-		ListenBrainz: listenbrainzConfig,
+		ListenBrainz: listenBrainzConfig,
 		LastFm:       lastfmConfig,
 		CSV:          csvConfig,
 	}, nil
@@ -164,30 +157,47 @@ func loadSpotifyConfig(dataPath string) (spotify.Config, error) {
 	}, nil
 }
 
-func loadKoitoConfig() (koito.Config, error) {
-	url, err := getRequiredEnv(envKoitoURL)
-	if err != nil {
-		return koito.Config{}, err
-	}
+func loadListenBrainzConfig(targetType targets.TargetType) (listenbrainz.Config, error) {
+	var token, baseURL string
+	var err error
 
-	token, err := getRequiredEnv(envKoitoToken)
-	if err != nil {
-		return koito.Config{}, err
-	}
-
-	return koito.Config{
-		URL:   url,
-		Token: token,
-	}, nil
-}
-
-func loadListenBrainzConfig() (listenbrainz.Config, error) {
-	token, err := getRequiredEnv(envListenBrainzToken)
-	if err != nil {
-		return listenbrainz.Config{}, err
+	switch targetType {
+	case targets.TargetKoito:
+		token, err = getRequiredEnv(envKoitoToken)
+		if err != nil {
+			return listenbrainz.Config{}, err
+		}
+		baseURL, err = getRequiredEnv(envKoitoURL)
+		if err != nil {
+			return listenbrainz.Config{}, err
+		}
+		baseURL, err = setURLPath(baseURL, "/apis/listenbrainz")
+		if err != nil {
+			return listenbrainz.Config{}, err
+		}
+	case targets.TargetMaloja:
+		token, err = getRequiredEnv(envMalojaToken)
+		if err != nil {
+			return listenbrainz.Config{}, err
+		}
+		baseURL, err = getRequiredEnv(envMalojaURL)
+		if err != nil {
+			return listenbrainz.Config{}, err
+		}
+		baseURL, err = setURLPath(baseURL, "/apis/listenbrainz")
+		if err != nil {
+			return listenbrainz.Config{}, err
+		}
+	default:
+		token, err = getRequiredEnv(envListenBrainzToken)
+		if err != nil {
+			return listenbrainz.Config{}, err
+		}
+		baseURL = getEnv(envListenBrainzURL, "")
 	}
 
 	return listenbrainz.Config{
+		URL:   baseURL,
 		Token: token,
 	}, nil
 }
@@ -262,6 +272,8 @@ func validateTarget(target string) (targets.TargetType, error) {
 	switch target {
 	case string(targets.TargetKoito):
 		return targets.TargetKoito, nil
+	case string(targets.TargetMaloja):
+		return targets.TargetMaloja, nil
 	case string(targets.TargetListenBrainz):
 		return targets.TargetListenBrainz, nil
 	case string(targets.TargetLastFm):
@@ -269,7 +281,7 @@ func validateTarget(target string) (targets.TargetType, error) {
 	case string(targets.TargetCSV):
 		return targets.TargetCSV, nil
 	default:
-		return "", fmt.Errorf("invalid target: %s. Valid targets are: %s, %s, %s, %s", target, targets.TargetKoito, targets.TargetListenBrainz, targets.TargetLastFm, targets.TargetCSV)
+		return "", fmt.Errorf("invalid target: %s. Valid targets are: %s, %s, %s, %s, %s", target, targets.TargetKoito, targets.TargetMaloja, targets.TargetListenBrainz, targets.TargetLastFm, targets.TargetCSV)
 	}
 }
 
@@ -284,4 +296,17 @@ func validateRedirectURL(pathPrefix, redirectURL string) error {
 	}
 
 	return nil
+}
+
+func setURLPath(rawURL, path string) (string, error) {
+	parsedURL, err := url.Parse(rawURL)
+	if err != nil {
+		return "", fmt.Errorf("invalid URL: %w", err)
+	}
+
+	// Clear any existing path and set to the provided path
+	parsedURL.Path = path
+	parsedURL.RawPath = ""
+
+	return parsedURL.String(), nil
 }

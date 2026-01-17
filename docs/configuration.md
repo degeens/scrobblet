@@ -6,9 +6,10 @@ All configuration is done through environment variables.
 - [General Configuration](#general-configuration)
 - [Client Configuration](#client-configuration)
   - [Spotify](#spotify)
-  - [Koito](#koito)
-  - [ListenBrainz](#listenbrainz)
   - [Last.fm](#lastfm)
+  - [ListenBrainz](#listenbrainz)
+  - [Maloja](#maloja)
+  - [Koito](#koito)
   - [CSV](#csv)
 
 ## General Configuration
@@ -18,7 +19,7 @@ All configuration is done through environment variables.
 | `SCROBBLET_PORT` | No | `7276` | Port the API server listens on |
 | `SCROBBLET_DATA_PATH` | No | `/etc/scrobblet` | Path where application data is stored |
 | `SCROBBLET_SOURCE` | Yes | - | Source to track. Options: `Spotify` |
-| `SCROBBLET_TARGET` | Yes | - | Target to scrobble to. Options: `Koito`, `ListenBrainz`, `LastFm`, `CSV` |
+| `SCROBBLET_TARGET` | Yes | - | Target to scrobble to. Options: `LastFm`, `ListenBrainz`, `Maloja`, `Koito`, `CSV` |
 
 ## Client Configuration
 
@@ -40,35 +41,6 @@ To set up Spotify:
 5. Start Scrobblet with the client ID and client secret configured
 6. Visit `http://localhost:7276/spotify/login` to authenticate
 
-### Koito
-
-| Variable | Required | Default | Description |
-|----------|----------|---------|-------------|
-| `KOITO_URL` | Yes* | - | URL of your Koito instance (e.g., `http://localhost:4110`) |
-| `KOITO_TOKEN` | Yes* | - | Your Koito API key |
-
-*Required only when `SCROBBLET_TARGET=Koito`
-
-To set up Koito:
-1. Access your Koito instance
-2. Log in
-3. Go to Settings → API Keys
-4. Generate a new API key
-5. Start Scrobblet with the API key configured
-
-### ListenBrainz
-
-| Variable | Required | Default | Description |
-|----------|----------|---------|-------------|
-| `LISTENBRAINZ_TOKEN` | Yes* | - | Your ListenBrainz user token |
-
-*Required only when `SCROBBLET_TARGET=ListenBrainz`
-
-To set up ListenBrainz:
-1. Go to [ListenBrainz User Settings](https://listenbrainz.org/settings/)
-2. Copy your user token
-3. Start Scrobblet with the user token configured
-
 ### Last.fm
 
 | Variable | Required | Default | Description |
@@ -86,6 +58,50 @@ To set up Last.fm:
 4. Copy the API key and shared secret
 5. Start Scrobblet with the API key and shared secret configured
 6. Visit `http://localhost:7276/lastfm/login` to authenticate
+
+### ListenBrainz
+
+| Variable | Required | Default | Description |
+|----------|----------|---------|-------------|
+| `LISTENBRAINZ_TOKEN` | Yes* | - | Your ListenBrainz user token |
+
+*Required only when `SCROBBLET_TARGET=ListenBrainz`
+
+To set up ListenBrainz:
+1. Go to [ListenBrainz User Settings](https://listenbrainz.org/settings/)
+2. Copy your user token
+3. Start Scrobblet with the user token configured
+
+### Maloja
+
+| Variable | Required | Default | Description |
+|----------|----------|---------|-------------|
+| `MALOJA_URL` | Yes* | - | URL of your Maloja instance (e.g., `http://localhost:42010`) |
+| `MALOJA_TOKEN` | Yes* | - | Your Maloja API key |
+
+*Required only when `SCROBBLET_TARGET=Maloja`
+
+To set up Maloja:
+1. Access your Maloja instance
+2. Go to Settings → API Keys
+3. Generate a new API key
+4. Start Scrobblet with the API key configured
+
+### Koito
+
+| Variable | Required | Default | Description |
+|----------|----------|---------|-------------|
+| `KOITO_URL` | Yes* | - | URL of your Koito instance (e.g., `http://localhost:4110`) |
+| `KOITO_TOKEN` | Yes* | - | Your Koito API key |
+
+*Required only when `SCROBBLET_TARGET=Koito`
+
+To set up Koito:
+1. Access your Koito instance
+2. Log in
+3. Go to Settings → API Keys
+4. Generate a new API key
+5. Start Scrobblet with the API key configured
 
 ### CSV
 

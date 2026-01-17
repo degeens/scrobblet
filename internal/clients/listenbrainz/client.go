@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	baseURL = "https://api.listenbrainz.org"
+	defaultBaseURL = "https://api.listenbrainz.org"
 )
 
 type Client struct {
@@ -19,7 +19,12 @@ type Client struct {
 	token      string
 }
 
-func NewClient(token string) *Client {
+func NewClient(token string, customBaseURL ...string) *Client {
+	baseURL := defaultBaseURL
+	if len(customBaseURL) > 0 && customBaseURL[0] != "" {
+		baseURL = customBaseURL[0]
+	}
+
 	return &Client{
 		baseURL:    baseURL,
 		httpClient: &http.Client{Timeout: 5 * time.Second},

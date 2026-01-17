@@ -87,7 +87,7 @@ func loadConfig() (*config, error) {
 
 func loadClientsConfig(sourceType sources.SourceType, targetType targets.TargetType, dataPath string) (clients.Config, error) {
 	var spotifyConfig spotify.Config
-	var listenbrainzConfig listenbrainz.Config
+	var listenBrainzConfig listenbrainz.Config
 	var lastfmConfig lastfm.Config
 	var csvConfig csv.Config
 	var err error
@@ -100,7 +100,7 @@ func loadClientsConfig(sourceType sources.SourceType, targetType targets.TargetT
 	}
 
 	if targetType == targets.TargetKoito || targetType == targets.TargetMaloja || targetType == targets.TargetListenBrainz {
-		listenbrainzConfig, err = loadListenBrainzConfig(targetType)
+		listenBrainzConfig, err = loadListenBrainzConfig(targetType)
 		if err != nil {
 			return clients.Config{}, err
 		}
@@ -122,7 +122,7 @@ func loadClientsConfig(sourceType sources.SourceType, targetType targets.TargetT
 
 	return clients.Config{
 		Spotify:      spotifyConfig,
-		ListenBrainz: listenbrainzConfig,
+		ListenBrainz: listenBrainzConfig,
 		LastFm:       lastfmConfig,
 		CSV:          csvConfig,
 	}, nil

@@ -8,12 +8,14 @@ import (
 )
 
 type ListenBrainzTarget struct {
-	client *listenbrainz.Client
+	client           *listenbrainz.Client
+	scrobbletVersion string
 }
 
-func NewListenBrainzTarget(client *listenbrainz.Client) *ListenBrainzTarget {
+func NewListenBrainzTarget(client *listenbrainz.Client, scrobbletVersion string) *ListenBrainzTarget {
 	return &ListenBrainzTarget{
-		client: client,
+		client:           client,
+		scrobbletVersion: scrobbletVersion,
 	}
 }
 
@@ -41,7 +43,9 @@ func (t *ListenBrainzTarget) toPlayingNowSubmitListens(track *common.Track) *lis
 					TrackName:   track.Title,
 					ReleaseName: track.Album,
 					AdditionalInfo: listenbrainz.AdditionalInfo{
-						ArtistNames: track.Artists,
+						ArtistNames:             track.Artists,
+						SubmissionClient:        "Scrobblet",
+						SubmissionClientVersion: t.scrobbletVersion,
 					},
 				},
 			},
@@ -63,7 +67,9 @@ func (t *ListenBrainzTarget) toSingleSubmitListens(trackedTrack *common.TrackedT
 					TrackName:   trackedTrack.Track.Title,
 					ReleaseName: trackedTrack.Track.Album,
 					AdditionalInfo: listenbrainz.AdditionalInfo{
-						ArtistNames: trackedTrack.Track.Artists,
+						ArtistNames:             trackedTrack.Track.Artists,
+						SubmissionClient:        "Scrobblet",
+						SubmissionClientVersion: t.scrobbletVersion,
 					},
 				},
 			},

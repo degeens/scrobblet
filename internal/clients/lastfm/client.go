@@ -21,6 +21,7 @@ const (
 
 type Client struct {
 	baseURL      string
+	userAgent    string
 	httpClient   *http.Client
 	apiKey       string
 	sharedSecret string
@@ -29,9 +30,10 @@ type Client struct {
 	sessionPath  string
 }
 
-func NewClient(apiKey, sharedSecret, redirectURL, dataPath string) *Client {
+func NewClient(apiKey, sharedSecret, redirectURL, dataPath, scrobbletVersion string) *Client {
 	c := &Client{
 		baseURL:      baseURL,
+		userAgent:    fmt.Sprintf("Scrobblet/%s", scrobbletVersion),
 		httpClient:   &http.Client{Timeout: 15 * time.Second},
 		apiKey:       apiKey,
 		sharedSecret: sharedSecret,
@@ -68,7 +70,14 @@ func (c *Client) UpdateNowPlaying(request *UpdateNowPlayingRequest) error {
 		formData.Set(k, v)
 	}
 
-	resp, err := c.httpClient.PostForm(c.baseURL, formData)
+	req, err := http.NewRequest("POST", c.baseURL, strings.NewReader(formData.Encode()))
+	if err != nil {
+		return err
+	}
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	req.Header.Set("User-Agent", c.userAgent)
+
+	resp, err := c.httpClient.Do(req)
 	if err != nil {
 		return err
 	}
@@ -134,7 +143,14 @@ func (c *Client) Scrobble(requests []ScrobbleRequest) error {
 		formData.Set(k, v)
 	}
 
-	resp, err := c.httpClient.PostForm(c.baseURL, formData)
+	req, err := http.NewRequest("POST", c.baseURL, strings.NewReader(formData.Encode()))
+	if err != nil {
+		return err
+	}
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	req.Header.Set("User-Agent", c.userAgent)
+
+	resp, err := c.httpClient.Do(req)
 	if err != nil {
 		return err
 	}

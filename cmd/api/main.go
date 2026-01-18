@@ -12,12 +12,16 @@ import (
 	"github.com/degeens/scrobblet/internal/targets"
 )
 
+var version = "undefined" // Will be overridden at build time
+
 type application struct {
 	spotifyClient *spotify.Client
 	lastfmClient  *lastfm.Client
 }
 
 func main() {
+	slog.Info("Starting Scrobblet", "version", version)
+
 	cfg, err := loadConfig()
 	if err != nil {
 		slog.Error(err.Error())
@@ -31,7 +35,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	targetClient, target, err := targets.New(cfg.target, cfg.clients)
+	targetClient, target, err := targets.New(cfg.target, cfg.clients, version)
 	if err != nil {
 		slog.Error(err.Error())
 		os.Exit(1)

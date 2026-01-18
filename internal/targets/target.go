@@ -25,21 +25,21 @@ type Target interface {
 	SubmitPlayedTrack(trackedTrack *common.TrackedTrack) error
 }
 
-func New(targetType TargetType, clientsConfig clients.Config) (any, Target, error) {
+func New(targetType TargetType, clientsConfig clients.Config, scrobbletVersion string) (any, Target, error) {
 	switch targetType {
 	case TargetKoito:
 		// Koito uses ListenBrainz-compatible API with custom base URL
 		client := listenbrainz.NewClient(clientsConfig.ListenBrainz.Token, clientsConfig.ListenBrainz.URL)
-		return client, NewListenBrainzTarget(client), nil
+		return client, NewListenBrainzTarget(client, scrobbletVersion), nil
 	case TargetMaloja:
 		// Maloja uses ListenBrainz-compatible API with custom base URL
 		client := listenbrainz.NewClient(clientsConfig.ListenBrainz.Token, clientsConfig.ListenBrainz.URL)
-		return client, NewListenBrainzTarget(client), nil
+		return client, NewListenBrainzTarget(client, scrobbletVersion), nil
 	case TargetListenBrainz:
 		client := listenbrainz.NewClient(clientsConfig.ListenBrainz.Token, clientsConfig.ListenBrainz.URL)
-		return client, NewListenBrainzTarget(client), nil
+		return client, NewListenBrainzTarget(client, scrobbletVersion), nil
 	case TargetLastFm:
-		client := lastfm.NewClient(clientsConfig.LastFm.APIKey, clientsConfig.LastFm.SharedSecret, clientsConfig.LastFm.RedirectURL, clientsConfig.LastFm.DataPath)
+		client := lastfm.NewClient(clientsConfig.LastFm.APIKey, clientsConfig.LastFm.SharedSecret, clientsConfig.LastFm.RedirectURL, clientsConfig.LastFm.DataPath, scrobbletVersion)
 		return client, NewLastFmTarget(client), nil
 	case TargetCSV:
 		client := csv.NewClient(clientsConfig.CSV.FilePath)

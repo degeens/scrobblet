@@ -1,0 +1,28 @@
+# Development Docker Compose - Last.fm Target
+# Usage: docker compose -f docker-compose.dev.lastfm.yml up -d --build
+
+# This configuration builds scrobblet locally and uses Last.fm as the scrobbling target.
+# Scrobblet sends scrobbles to the public Last.fm API (https://ws.audioscrobbler.com/2.0/).
+
+# Access Scrobblet at http://localhost:7276
+# Access Last.fm at https://www.last.fm
+
+services:
+  scrobblet:
+    container_name: scrobblet
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - scrobblet-data:/etc/scrobblet
+    ports:
+      - 7276:7276
+    environment:
+      - SCROBBLET_SOURCE=Spotify
+      - SCROBBLET_TARGET=LastFm
+    env_file:
+      - .env
+    restart: unless-stopped
+
+volumes:
+  scrobblet-data:

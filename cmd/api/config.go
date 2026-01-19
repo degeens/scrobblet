@@ -17,6 +17,7 @@ import (
 type config struct {
 	port     string
 	dataPath string
+	logLevel string
 	source   sources.SourceType
 	target   targets.TargetType
 	clients  clients.Config
@@ -26,10 +27,12 @@ const (
 	// Default values
 	defaultPort     = "7276"
 	defaultDataPath = "/etc/scrobblet"
+	defaultLogLevel = "INFO"
 
 	// Environment variable keys
 	envPort                = "SCROBBLET_PORT"
 	envDataPath            = "SCROBBLET_DATA_PATH"
+	envLogLevel            = "SCROBBLET_LOG_LEVEL"
 	envSource              = "SCROBBLET_SOURCE"
 	envTarget              = "SCROBBLET_TARGET"
 	envSpotifyClientID     = "SPOTIFY_CLIENT_ID"
@@ -50,6 +53,7 @@ const (
 func loadConfig() (*config, error) {
 	port := getEnv(envPort, defaultPort)
 	dataPath := getEnv(envDataPath, defaultDataPath)
+	logLevel := getEnv(envLogLevel, defaultLogLevel)
 
 	source, err := getRequiredEnv(envSource)
 	if err != nil {
@@ -79,6 +83,7 @@ func loadConfig() (*config, error) {
 	return &config{
 		port:     port,
 		dataPath: dataPath,
+		logLevel: logLevel,
 		source:   sourceType,
 		target:   targetType,
 		clients:  clientsConfig,

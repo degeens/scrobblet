@@ -32,6 +32,7 @@ services:
     environment:
       - SCROBBLET_PORT=7276 # Optional
       - SCROBBLET_DATA_PATH=/etc/scrobblet # Optional
+      - SCROBBLET_LOG_LEVEL=INFO # Optional
       - SCROBBLET_SOURCE=Spotify
       - SCROBBLET_TARGET=Koito
       # Spotify (Required when SCROBBLET_SOURCE=Spotify)

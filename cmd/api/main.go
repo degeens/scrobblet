@@ -20,14 +20,15 @@ type application struct {
 }
 
 func main() {
-	slog.Info("Starting Scrobblet", "version", version)
-
 	cfg, err := loadConfig()
 	if err != nil {
 		slog.Error(err.Error())
 		os.Exit(1)
 	}
-	slog.Info("Config loaded")
+
+	setDefaultLogger(cfg.logLevel)
+
+	slog.Info("Starting Scrobblet", "version", version)
 
 	sourceClient, source, err := sources.New(cfg.source, cfg.clients)
 	if err != nil {
@@ -60,4 +61,15 @@ func main() {
 		slog.Error(err.Error())
 		os.Exit(1)
 	}
+}
+
+func setDefaultLogger(logLevel string) {
+	var level slog.Level
+
+	if err := level.UnmarshalText([]byte(logLevel)); err != nil {
+		level = slog.LevelInfo
+	}
+
+	logger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: level}))
+	slog.SetDefault(logger)
 }

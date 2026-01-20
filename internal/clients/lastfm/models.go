@@ -3,10 +3,11 @@ package lastfm
 import "encoding/json"
 
 type UpdateNowPlayingRequest struct {
-	Artist   string
-	Track    string
-	Album    string
-	Duration int // In seconds
+	Artist      string
+	Track       string
+	Album       string
+	Duration    int // In seconds
+	TrackNumber int
 }
 
 type UpdateNowPlayingResponse struct {
@@ -18,11 +19,12 @@ type UpdateNowPlayingResponse struct {
 }
 
 type ScrobbleRequest struct {
-	Artist    string
-	Track     string
-	Album     string
-	Duration  int   // In seconds
-	Timestamp int64 // UNIX timestamp
+	Artist      string
+	Track       string
+	Album       string
+	Duration    int   // In seconds
+	Timestamp   int64 // UNIX timestamp
+	TrackNumber int
 }
 
 type ScrobbleResponse struct {

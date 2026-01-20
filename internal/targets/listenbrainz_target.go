@@ -1,6 +1,7 @@
 package targets
 
 import (
+	"strconv"
 	"strings"
 
 	"github.com/degeens/scrobblet/internal/clients/listenbrainz"
@@ -46,6 +47,7 @@ func (t *ListenBrainzTarget) toPlayingNowSubmitListens(track *common.Track) *lis
 						ArtistNames:             track.Artists,
 						SubmissionClient:        "Scrobblet",
 						SubmissionClientVersion: t.scrobbletVersion,
+						TrackNumber:             strconv.Itoa(track.TrackNumber),
 					},
 				},
 			},
@@ -70,6 +72,7 @@ func (t *ListenBrainzTarget) toSingleSubmitListens(trackedTrack *common.TrackedT
 						ArtistNames:             trackedTrack.Track.Artists,
 						SubmissionClient:        "Scrobblet",
 						SubmissionClientVersion: t.scrobbletVersion,
+						TrackNumber:             strconv.Itoa(trackedTrack.Track.TrackNumber),
 					},
 				},
 			},

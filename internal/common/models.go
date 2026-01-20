@@ -6,10 +6,11 @@ import (
 )
 
 type Track struct {
-	Artists  []string
-	Title    string
-	Album    string
-	Duration time.Duration
+	Artists     []string
+	Title       string
+	Album       string
+	Duration    time.Duration
+	TrackNumber int
 }
 
 func (t *Track) Equals(other *Track) bool {

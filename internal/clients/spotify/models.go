@@ -7,10 +7,11 @@ type CurrentlyPlayingTrack struct {
 }
 
 type Item struct {
-	Album    Album    `json:"album"`
-	Artists  []Artist `json:"artists"`
-	Duration int      `json:"duration_ms"`
-	Name     string   `json:"name"`
+	Album       Album    `json:"album"`
+	Artists     []Artist `json:"artists"`
+	Duration    int      `json:"duration_ms"`
+	Name        string   `json:"name"`
+	TrackNumber int      `json:"track_number"`
 }
 
 type Album struct {

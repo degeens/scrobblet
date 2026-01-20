@@ -53,14 +53,15 @@ func (c *Client) UpdateNowPlaying(request *UpdateNowPlayingRequest) error {
 	}
 
 	params := map[string]string{
-		"method":   "track.updateNowPlaying",
-		"artist":   request.Artist,
-		"track":    request.Track,
-		"album":    request.Album,
-		"duration": strconv.Itoa(request.Duration),
-		"api_key":  c.apiKey,
-		"sk":       c.session.Key,
-		"format":   "json",
+		"method":      "track.updateNowPlaying",
+		"artist":      request.Artist,
+		"track":       request.Track,
+		"album":       request.Album,
+		"trackNumber": strconv.Itoa(request.TrackNumber),
+		"duration":    strconv.Itoa(request.Duration),
+		"api_key":     c.apiKey,
+		"sk":          c.session.Key,
+		"format":      "json",
 	}
 
 	params["api_sig"] = c.generateSignature(params)
@@ -133,6 +134,7 @@ func (c *Client) Scrobble(requests []ScrobbleRequest) error {
 		params["track"+idx] = request.Track
 		params["timestamp"+idx] = strconv.FormatInt(request.Timestamp, 10)
 		params["album"+idx] = request.Album
+		params["trackNumber"+idx] = strconv.Itoa(request.TrackNumber)
 		params["duration"+idx] = strconv.Itoa(request.Duration)
 	}
 

@@ -32,10 +32,11 @@ func (t *LastFmTarget) toUpdateNowPlaying(track *common.Track) *lastfm.UpdateNow
 	artistName := track.Artists[0]
 
 	return &lastfm.UpdateNowPlayingRequest{
-		Artist:   artistName,
-		Track:    track.Title,
-		Album:    track.Album,
-		Duration: int(track.Duration.Seconds()),
+		Artist:      artistName,
+		Track:       track.Title,
+		Album:       track.Album,
+		Duration:    int(track.Duration.Seconds()),
+		TrackNumber: track.TrackNumber,
 	}
 }
 
@@ -44,10 +45,11 @@ func (t *LastFmTarget) toScrobble(trackedTrack *common.TrackedTrack) lastfm.Scro
 	artistName := trackedTrack.Track.Artists[0]
 
 	return lastfm.ScrobbleRequest{
-		Artist:    artistName,
-		Track:     trackedTrack.Track.Title,
-		Timestamp: trackedTrack.StartedAt.Unix(),
-		Album:     trackedTrack.Track.Album,
-		Duration:  int(trackedTrack.Track.Duration.Seconds()),
+		Artist:      artistName,
+		Track:       trackedTrack.Track.Title,
+		Timestamp:   trackedTrack.StartedAt.Unix(),
+		Album:       trackedTrack.Track.Album,
+		Duration:    int(trackedTrack.Track.Duration.Seconds()),
+		TrackNumber: trackedTrack.Track.TrackNumber,
 	}
 }

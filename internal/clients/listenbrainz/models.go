@@ -21,4 +21,5 @@ type AdditionalInfo struct {
 	ArtistNames             []string `json:"artist_names"`
 	SubmissionClient        string   `json:"submission_client"`
 	SubmissionClientVersion string   `json:"submission_client_version"`
+	TrackNumber             string   `json:"tracknumber"`
 }

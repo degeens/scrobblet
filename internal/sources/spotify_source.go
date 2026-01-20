@@ -40,10 +40,11 @@ func toPlaybackState(currentlyPlaying *spotify.CurrentlyPlayingTrack) *PlaybackS
 
 	return &PlaybackState{
 		Track: &common.Track{
-			Artists:  artists,
-			Title:    currentlyPlaying.Item.Name,
-			Album:    currentlyPlaying.Item.Album.Name,
-			Duration: time.Duration(currentlyPlaying.Item.Duration) * time.Millisecond,
+			Artists:     artists,
+			Title:       currentlyPlaying.Item.Name,
+			Album:       currentlyPlaying.Item.Album.Name,
+			Duration:    time.Duration(currentlyPlaying.Item.Duration) * time.Millisecond,
+			TrackNumber: currentlyPlaying.Item.TrackNumber,
 		},
 		Position:  time.Duration(currentlyPlaying.Progress) * time.Millisecond,
 		Timestamp: time.Now().UTC(),

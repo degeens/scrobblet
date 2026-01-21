@@ -4,6 +4,7 @@
 
 # Scrobblet
 
+[![CI](https://github.com/degeens/scrobblet/actions/workflows/ci.yml/badge.svg)](https://github.com/degeens/scrobblet/actions/workflows/ci.yml)
 ![Go version](https://img.shields.io/github/go-mod/go-version/degeens/scrobblet?label=go)
 [![Go Report](https://goreportcard.com/badge/github.com/degeens/scrobblet)](https://goreportcard.com/report/github.com/degeens/scrobblet)
 [![Release](https://img.shields.io/github/v/release/degeens/scrobblet?include_prereleases)](https://github.com/degeens/scrobblet/releases)

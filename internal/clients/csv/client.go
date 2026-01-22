@@ -48,7 +48,11 @@ func (c *Client) WriteScrobble(trackedTrack *common.TrackedTrack) error {
 	if err != nil {
 		return fmt.Errorf("failed to open CSV file: %w", err)
 	}
-	defer file.Close()
+	defer func() {
+		if closeErr := file.Close(); closeErr != nil && err == nil {
+			err = closeErr
+		}
+	}()
 
 	writer := csv.NewWriter(file)
 

@@ -85,7 +85,11 @@ func (c *Client) UpdateNowPlaying(request *UpdateNowPlayingRequest) error {
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
+	defer func() {
+		if closeErr := resp.Body.Close(); closeErr != nil && err == nil {
+			err = closeErr
+		}
+	}()
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
@@ -159,7 +163,11 @@ func (c *Client) Scrobble(requests []ScrobbleRequest) error {
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
+	defer func() {
+		if closeErr := resp.Body.Close(); closeErr != nil && err == nil {
+			err = closeErr
+		}
+	}()
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {

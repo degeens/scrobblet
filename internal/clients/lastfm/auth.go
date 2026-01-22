@@ -62,7 +62,11 @@ func (c *Client) ExchangeTokenForSession(ctx context.Context, token string) erro
 	if err != nil {
 		return err
 	}
-	defer res.Body.Close()
+	defer func() {
+		if closeErr := res.Body.Close(); closeErr != nil && err == nil {
+			err = closeErr
+		}
+	}()
 
 	body, err := io.ReadAll(res.Body)
 	if err != nil {

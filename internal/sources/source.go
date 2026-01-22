@@ -28,7 +28,10 @@ type PlaybackState struct {
 func New(sourceType SourceType, clientsConfig clients.Config) (any, Source, error) {
 	switch sourceType {
 	case SourceSpotify:
-		client := spotify.NewClient(clientsConfig.Spotify.ClientID, clientsConfig.Spotify.ClientSecret, clientsConfig.Spotify.RedirectURL, clientsConfig.Spotify.DataPath)
+		client, err := spotify.NewClient(clientsConfig.Spotify.ClientID, clientsConfig.Spotify.ClientSecret, clientsConfig.Spotify.RedirectURL, clientsConfig.Spotify.DataPath)
+		if err != nil {
+			return nil, nil, err
+		}
 		return client, NewSpotifySource(client), nil
 	default:
 		return nil, nil, fmt.Errorf("unknown source type: %s", sourceType)

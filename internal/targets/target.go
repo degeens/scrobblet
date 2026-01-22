@@ -39,7 +39,10 @@ func New(targetType TargetType, clientsConfig clients.Config, scrobbletVersion s
 		client := listenbrainz.NewClient(clientsConfig.ListenBrainz.Token, clientsConfig.ListenBrainz.URL)
 		return client, NewListenBrainzTarget(client, scrobbletVersion), nil
 	case TargetLastFm:
-		client := lastfm.NewClient(clientsConfig.LastFm.APIKey, clientsConfig.LastFm.SharedSecret, clientsConfig.LastFm.RedirectURL, clientsConfig.LastFm.DataPath, scrobbletVersion)
+		client, err := lastfm.NewClient(clientsConfig.LastFm.APIKey, clientsConfig.LastFm.SharedSecret, clientsConfig.LastFm.RedirectURL, clientsConfig.LastFm.DataPath, scrobbletVersion)
+		if err != nil {
+			return nil, nil, err
+		}
 		return client, NewLastFmTarget(client), nil
 	case TargetCSV:
 		client := csv.NewClient(clientsConfig.CSV.FilePath)

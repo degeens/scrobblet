@@ -25,7 +25,7 @@ type Client struct {
 	oauth2TokenPath string
 }
 
-func NewClient(clientID, clientSecret, redirectURL, dataPath string) *Client {
+func NewClient(clientID, clientSecret, redirectURL, dataPath string) (*Client, error) {
 	c := &Client{
 		baseURL:    baseURL,
 		httpClient: &http.Client{Timeout: 5 * time.Second},
@@ -42,9 +42,12 @@ func NewClient(clientID, clientSecret, redirectURL, dataPath string) *Client {
 		oauth2TokenPath: filepath.Join(dataPath, "spotify_token.json"),
 	}
 
-	c.loadToken()
+	err := c.loadToken()
+	if err != nil {
+		return nil, err
+	}
 
-	return c
+	return c, nil
 }
 
 func (c *Client) GetCurrentlyPlayingTrack() (*CurrentlyPlayingTrack, error) {

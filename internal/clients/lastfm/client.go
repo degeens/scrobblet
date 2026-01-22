@@ -30,7 +30,7 @@ type Client struct {
 	sessionPath  string
 }
 
-func NewClient(apiKey, sharedSecret, redirectURL, dataPath, scrobbletVersion string) *Client {
+func NewClient(apiKey, sharedSecret, redirectURL, dataPath, scrobbletVersion string) (*Client, error) {
 	c := &Client{
 		baseURL:      baseURL,
 		userAgent:    fmt.Sprintf("Scrobblet/%s", scrobbletVersion),
@@ -42,9 +42,12 @@ func NewClient(apiKey, sharedSecret, redirectURL, dataPath, scrobbletVersion str
 
 	c.sessionPath = filepath.Join(dataPath, "lastfm_session.json")
 
-	c.loadSessionKey()
+	err := c.loadSessionKey()
+	if err != nil {
+		return nil, err
+	}
 
-	return c
+	return c, nil
 }
 
 func (c *Client) UpdateNowPlaying(request *UpdateNowPlayingRequest) error {

@@ -4,7 +4,7 @@ import "time"
 
 func ShouldScrobble(trackedDuration, trackDuration time.Duration) bool {
 	// The track must be longer than 30 seconds
-	thirtySeconds := time.Duration(30) * time.Second
+	thirtySeconds := time.Duration(30) * time.Second //nolint:staticcheck
 	if trackDuration <= thirtySeconds {
 		return false
 	}

@@ -287,23 +287,6 @@ func validateSource(source string) (sources.SourceType, error) {
 	}
 }
 
-func validateTarget(target string) (targets.TargetType, error) {
-	switch target {
-	case string(targets.TargetKoito):
-		return targets.TargetKoito, nil
-	case string(targets.TargetMaloja):
-		return targets.TargetMaloja, nil
-	case string(targets.TargetListenBrainz):
-		return targets.TargetListenBrainz, nil
-	case string(targets.TargetLastFm):
-		return targets.TargetLastFm, nil
-	case string(targets.TargetCSV):
-		return targets.TargetCSV, nil
-	default:
-		return "", fmt.Errorf("invalid target: %s. Valid targets are: %s, %s, %s, %s, %s", target, targets.TargetKoito, targets.TargetMaloja, targets.TargetListenBrainz, targets.TargetLastFm, targets.TargetCSV)
-	}
-}
-
 func validateTargets(targetsString string) ([]targets.TargetType, error) {
 	targetStrings := strings.Split(targetsString, ",")
 	targetTypes := make([]targets.TargetType, 0, len(targetStrings))
@@ -330,6 +313,23 @@ func validateTargets(targetsString string) ([]targets.TargetType, error) {
 	}
 
 	return targetTypes, nil
+}
+
+func validateTarget(target string) (targets.TargetType, error) {
+	switch target {
+	case string(targets.TargetKoito):
+		return targets.TargetKoito, nil
+	case string(targets.TargetMaloja):
+		return targets.TargetMaloja, nil
+	case string(targets.TargetListenBrainz):
+		return targets.TargetListenBrainz, nil
+	case string(targets.TargetLastFm):
+		return targets.TargetLastFm, nil
+	case string(targets.TargetCSV):
+		return targets.TargetCSV, nil
+	default:
+		return "", fmt.Errorf("invalid target: %s. Valid targets are: %s, %s, %s, %s, %s", target, targets.TargetKoito, targets.TargetMaloja, targets.TargetListenBrainz, targets.TargetLastFm, targets.TargetCSV)
+	}
 }
 
 func validateRedirectURL(pathPrefix, redirectURL string) error {

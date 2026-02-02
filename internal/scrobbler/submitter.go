@@ -8,14 +8,14 @@ import (
 )
 
 type Submitter struct {
-	target           targets.Target
+	targets          []targets.Target
 	playingTrackChan <-chan common.Track
 	playedTrackChan  <-chan common.TrackedTrack
 }
 
-func NewSubmitter(target targets.Target, playingTrackChan <-chan common.Track, playedTrackChan <-chan common.TrackedTrack) *Submitter {
+func NewSubmitter(targets []targets.Target, playingTrackChan <-chan common.Track, playedTrackChan <-chan common.TrackedTrack) *Submitter {
 	return &Submitter{
-		target:           target,
+		targets:          targets,
 		playingTrackChan: playingTrackChan,
 		playedTrackChan:  playedTrackChan,
 	}
@@ -27,14 +27,16 @@ func (s *Submitter) Start() {
 		case track := <-s.playingTrackChan:
 			slog.Info("Submitting now playing track", track.SlogArgs()...)
 
-			err := s.target.SubmitPlayingTrack(&track)
-			if err != nil {
-				slog.Error("Failed to submit now playing track", append(track.SlogArgs(), "error", err.Error())...)
-				continue
-				// todo: retry (with exponential backoff)
-			}
+			for i, target := range s.targets {
+				err := target.SubmitPlayingTrack(&track)
+				if err != nil {
+					slog.Error("Failed to submit now playing track", append(track.SlogArgs(), "target_index", i, "error", err.Error())...)
+					continue
+					// todo: retry (with exponential backoff)
+				}
 
-			slog.Info("Now playing track submitted", track.SlogArgs()...)
+				slog.Info("Now playing track submitted", append(track.SlogArgs(), "target_index", i)...)
+			}
 		case trackedTrack := <-s.playedTrackChan:
 			if !ShouldScrobble(trackedTrack.Duration, trackedTrack.Track.Duration) {
 				slog.Info("Track did not meet scrobble rules, skipping track", trackedTrack.Track.SlogArgs()...)
@@ -43,14 +45,16 @@ func (s *Submitter) Start() {
 
 			slog.Info("Track met scrobble rules, submitting track", trackedTrack.Track.SlogArgs()...)
 
-			err := s.target.SubmitPlayedTrack(&trackedTrack)
-			if err != nil {
-				slog.Error("Failed to submit track", append(trackedTrack.Track.SlogArgs(), "error", err.Error())...)
-				continue
-				// todo: retry (with exponential backoff)
-			}
+			for i, target := range s.targets {
+				err := target.SubmitPlayedTrack(&trackedTrack)
+				if err != nil {
+					slog.Error("Failed to submit track", append(trackedTrack.Track.SlogArgs(), "target_index", i, "error", err.Error())...)
+					continue
+					// todo: retry (with exponential backoff)
+				}
 
-			slog.Info("Track submitted", trackedTrack.Track.SlogArgs()...)
+				slog.Info("Track submitted", append(trackedTrack.Track.SlogArgs(), "target_index", i)...)
+			}
 		}
 	}
 }

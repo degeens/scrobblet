@@ -19,7 +19,7 @@ services:
       - 7276:7276
     environment:
       - SCROBBLET_SOURCE=Spotify
-      - SCROBBLET_TARGET=LastFm
+      - SCROBBLET_TARGETS=LastFm
     env_file:
       - .env
     restart: unless-stopped

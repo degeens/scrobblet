@@ -19,7 +19,7 @@ services:
       - 7276:7276
     environment:
       - SCROBBLET_SOURCE=Spotify
-      - SCROBBLET_TARGET=Maloja
+      - SCROBBLET_TARGETS=Maloja
     env_file:
       - .env
     depends_on:

@@ -20,7 +20,7 @@ All configuration is done through environment variables.
 | `SCROBBLET_DATA_PATH` | No | `/etc/scrobblet` | Path where application data is stored |
 | `SCROBBLET_LOG_LEVEL` | No | `INFO` | The log level. Options: `DEBUG`, `INFO`, `WARN`, `ERROR` |
 | `SCROBBLET_SOURCE` | Yes | - | Source to track. Options: `Spotify` |
-| `SCROBBLET_TARGET` | Yes | - | Target to scrobble to. Options: `LastFm`, `ListenBrainz`, `Maloja`, `Koito`, `CSV` |
+| `SCROBBLET_TARGETS` | Yes | - | Targets to scrobble to. Options: `LastFm`, `ListenBrainz`, `Maloja`, `Koito`, `CSV` |
 
 ## Client Configuration
 
@@ -50,7 +50,7 @@ To set up Spotify:
 | `LASTFM_SHARED_SECRET` | Yes* | - | Your Last.fm shared secret |
 | `LASTFM_REDIRECT_URL` | Yes* | - | Redirect URL (must match your Last.fm API account callback URL) |
 
-*Required only when `SCROBBLET_TARGET=LastFm`
+*Required only when `SCROBBLET_TARGETS=LastFm`
 
 To set up Last.fm:
 1. Go to [Last.fm API Account Creation](https://www.last.fm/api/account/create)
@@ -67,7 +67,7 @@ To set up Last.fm:
 | `LISTENBRAINZ_URL` | No | `https://api.listenbrainz.org` | URL of a ListenBrainz-compatible service |
 | `LISTENBRAINZ_TOKEN` | Yes* | - | Your ListenBrainz user token |
 
-*Required only when `SCROBBLET_TARGET=ListenBrainz`
+*Required only when `SCROBBLET_TARGETS=ListenBrainz`
 
 To set up ListenBrainz:
 1. Go to [ListenBrainz User Settings](https://listenbrainz.org/settings/)
@@ -83,7 +83,7 @@ To set up ListenBrainz:
 | `MALOJA_URL` | Yes* | - | URL of your Maloja instance (e.g., `http://localhost:42010`) |
 | `MALOJA_TOKEN` | Yes* | - | Your Maloja API key |
 
-*Required only when `SCROBBLET_TARGET=Maloja`
+*Required only when `SCROBBLET_TARGETS=Maloja`
 
 To set up Maloja:
 1. Access your Maloja instance
@@ -98,7 +98,7 @@ To set up Maloja:
 | `KOITO_URL` | Yes* | - | URL of your Koito instance (e.g., `http://localhost:4110`) |
 | `KOITO_TOKEN` | Yes* | - | Your Koito API key |
 
-*Required only when `SCROBBLET_TARGET=Koito`
+*Required only when `SCROBBLET_TARGETS=Koito`
 
 To set up Koito:
 1. Access your Koito instance
@@ -113,7 +113,7 @@ To set up Koito:
 |----------|----------|---------|-------------|
 | `CSV_FILE_PATH` | No | `${SCROBBLET_DATA_PATH}/scrobbles.csv` | Path to the CSV file where scrobbles will be written |
 
-*Required only when `SCROBBLET_TARGET=CSV`
+*Required only when `SCROBBLET_TARGETS=CSV`
 
 The CSV target writes completed scrobbles to a CSV file with the following format:
 - **Artist(s)**: Multiple artists joined with ", "

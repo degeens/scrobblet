@@ -7,14 +7,14 @@ import (
 )
 
 type Scrobbler struct {
-	source sources.Source
-	target targets.Target
+	source  sources.Source
+	targets []targets.Target
 }
 
-func NewScrobbler(source sources.Source, target targets.Target) *Scrobbler {
+func NewScrobbler(source sources.Source, targets []targets.Target) *Scrobbler {
 	return &Scrobbler{
-		source: source,
-		target: target,
+		source:  source,
+		targets: targets,
 	}
 }
 
@@ -25,6 +25,6 @@ func (s *Scrobbler) Start() {
 	tracker := NewTracker(s.source, playingTrackChan, playedTrackChan)
 	go tracker.Start()
 
-	submitter := NewSubmitter(s.target, playingTrackChan, playedTrackChan)
+	submitter := NewSubmitter(s.targets, playingTrackChan, playedTrackChan)
 	go submitter.Start()
 }

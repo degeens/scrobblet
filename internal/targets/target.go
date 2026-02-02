@@ -29,11 +29,11 @@ func New(targetType TargetType, clientsConfig clients.Config, scrobbletVersion s
 	switch targetType {
 	case TargetKoito:
 		// Koito uses ListenBrainz-compatible API with custom base URL
-		client := listenbrainz.NewClient(clientsConfig.ListenBrainz.Token, clientsConfig.ListenBrainz.URL)
+		client := listenbrainz.NewClient(clientsConfig.Koito.Token, clientsConfig.Koito.URL)
 		return client, NewListenBrainzTarget(client, scrobbletVersion), nil
 	case TargetMaloja:
 		// Maloja uses ListenBrainz-compatible API with custom base URL
-		client := listenbrainz.NewClient(clientsConfig.ListenBrainz.Token, clientsConfig.ListenBrainz.URL)
+		client := listenbrainz.NewClient(clientsConfig.Maloja.Token, clientsConfig.Maloja.URL)
 		return client, NewListenBrainzTarget(client, scrobbletVersion), nil
 	case TargetListenBrainz:
 		client := listenbrainz.NewClient(clientsConfig.ListenBrainz.Token, clientsConfig.ListenBrainz.URL)
@@ -50,4 +50,21 @@ func New(targetType TargetType, clientsConfig clients.Config, scrobbletVersion s
 	default:
 		return nil, nil, fmt.Errorf("unknown target type: %s", targetType)
 	}
+}
+
+func NewMultiple(targetTypes []TargetType, clientsConfig clients.Config, scrobbletVersion string) ([]any, []Target, error) {
+	clients := make([]any, 0, len(targetTypes))
+	targets := make([]Target, 0, len(targetTypes))
+
+	for _, targetType := range targetTypes {
+		client, target, err := New(targetType, clientsConfig, scrobbletVersion)
+		if err != nil {
+			return nil, nil, err
+		}
+
+		clients = append(clients, client)
+		targets = append(targets, target)
+	}
+
+	return clients, targets, nil
 }

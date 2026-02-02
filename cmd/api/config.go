@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/url"
 	"os"
+	"strings"
 
 	"github.com/degeens/scrobblet/internal/clients"
 	"github.com/degeens/scrobblet/internal/clients/csv"
@@ -19,7 +20,7 @@ type config struct {
 	dataPath string
 	logLevel string
 	source   sources.SourceType
-	target   targets.TargetType
+	targets  []targets.TargetType
 	clients  clients.Config
 }
 
@@ -34,7 +35,7 @@ const (
 	envDataPath            = "SCROBBLET_DATA_PATH"
 	envLogLevel            = "SCROBBLET_LOG_LEVEL"
 	envSource              = "SCROBBLET_SOURCE"
-	envTarget              = "SCROBBLET_TARGET"
+	envTargets             = "SCROBBLET_TARGETS"
 	envSpotifyClientID     = "SPOTIFY_CLIENT_ID"
 	envSpotifyClientSecret = "SPOTIFY_CLIENT_SECRET"
 	envSpotifyRedirectURL  = "SPOTIFY_REDIRECT_URL"
@@ -65,17 +66,17 @@ func loadConfig() (*config, error) {
 		return nil, err
 	}
 
-	target, err := getRequiredEnv(envTarget)
+	targets, err := getRequiredEnv(envTargets)
 	if err != nil {
 		return nil, err
 	}
 
-	targetType, err := validateTarget(target)
+	targetTypes, err := validateTargets(targets)
 	if err != nil {
 		return nil, err
 	}
 
-	clientsConfig, err := loadClientsConfig(sourceType, targetType, dataPath)
+	clientsConfig, err := loadClientsConfig(sourceType, targetTypes, dataPath)
 	if err != nil {
 		return nil, err
 	}
@@ -85,13 +86,15 @@ func loadConfig() (*config, error) {
 		dataPath: dataPath,
 		logLevel: logLevel,
 		source:   sourceType,
-		target:   targetType,
+		targets:  targetTypes,
 		clients:  clientsConfig,
 	}, nil
 }
 
-func loadClientsConfig(sourceType sources.SourceType, targetType targets.TargetType, dataPath string) (clients.Config, error) {
+func loadClientsConfig(sourceType sources.SourceType, targetTypes []targets.TargetType, dataPath string) (clients.Config, error) {
 	var spotifyConfig spotify.Config
+	var koitoConfig listenbrainz.Config
+	var malojaConfig listenbrainz.Config
 	var listenBrainzConfig listenbrainz.Config
 	var lastfmConfig lastfm.Config
 	var csvConfig csv.Config
@@ -104,29 +107,40 @@ func loadClientsConfig(sourceType sources.SourceType, targetType targets.TargetT
 		}
 	}
 
-	if targetType == targets.TargetKoito || targetType == targets.TargetMaloja || targetType == targets.TargetListenBrainz {
-		listenBrainzConfig, err = loadListenBrainzConfig(targetType)
-		if err != nil {
-			return clients.Config{}, err
-		}
-	}
-
-	if targetType == targets.TargetLastFm {
-		lastfmConfig, err = loadLastFmConfig(dataPath)
-		if err != nil {
-			return clients.Config{}, err
-		}
-	}
-
-	if targetType == targets.TargetCSV {
-		csvConfig, err = loadCSVConfig(dataPath)
-		if err != nil {
-			return clients.Config{}, err
+	for _, targetType := range targetTypes {
+		switch targetType {
+		case targets.TargetKoito:
+			koitoConfig, err = loadListenBrainzConfig(targetType)
+			if err != nil {
+				return clients.Config{}, err
+			}
+		case targets.TargetMaloja:
+			malojaConfig, err = loadListenBrainzConfig(targetType)
+			if err != nil {
+				return clients.Config{}, err
+			}
+		case targets.TargetListenBrainz:
+			listenBrainzConfig, err = loadListenBrainzConfig(targetType)
+			if err != nil {
+				return clients.Config{}, err
+			}
+		case targets.TargetLastFm:
+			lastfmConfig, err = loadLastFmConfig(dataPath)
+			if err != nil {
+				return clients.Config{}, err
+			}
+		case targets.TargetCSV:
+			csvConfig, err = loadCSVConfig(dataPath)
+			if err != nil {
+				return clients.Config{}, err
+			}
 		}
 	}
 
 	return clients.Config{
 		Spotify:      spotifyConfig,
+		Koito:        koitoConfig,
+		Maloja:       malojaConfig,
 		ListenBrainz: listenBrainzConfig,
 		LastFm:       lastfmConfig,
 		CSV:          csvConfig,
@@ -271,6 +285,34 @@ func validateSource(source string) (sources.SourceType, error) {
 	default:
 		return "", fmt.Errorf("invalid source: %s. Valid sources are: %s", source, sources.SourceSpotify)
 	}
+}
+
+func validateTargets(targetsString string) ([]targets.TargetType, error) {
+	targetStrings := strings.Split(targetsString, ",")
+	targetTypes := make([]targets.TargetType, 0, len(targetStrings))
+	seen := make(map[targets.TargetType]bool)
+
+	for _, targetString := range targetStrings {
+		targetString = strings.TrimSpace(targetString)
+
+		targetType, err := validateTarget(targetString)
+		if err != nil {
+			return nil, err
+		}
+
+		if seen[targetType] {
+			return nil, fmt.Errorf("duplicate target type: %s. Multiple targets of the same type are not supported", targetType)
+		}
+		seen[targetType] = true
+
+		targetTypes = append(targetTypes, targetType)
+	}
+
+	if len(targetTypes) == 0 {
+		return nil, fmt.Errorf("no targets specified in %s", envTargets)
+	}
+
+	return targetTypes, nil
 }
 
 func validateTarget(target string) (targets.TargetType, error) {

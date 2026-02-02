@@ -36,7 +36,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	targetClient, target, err := targets.New(cfg.target, cfg.clients, version)
+	targetClients, targets, err := targets.NewMultiple(cfg.targets, cfg.clients, version)
 	if err != nil {
 		slog.Error(err.Error())
 		os.Exit(1)
@@ -46,11 +46,13 @@ func main() {
 	if spotifyClient, ok := sourceClient.(*spotify.Client); ok {
 		app.spotifyClient = spotifyClient
 	}
-	if lastfmClient, ok := targetClient.(*lastfm.Client); ok {
-		app.lastfmClient = lastfmClient
+	for _, client := range targetClients {
+		if lastfmClient, ok := client.(*lastfm.Client); ok {
+			app.lastfmClient = lastfmClient
+		}
 	}
 
-	scrobbler := scrobbler.NewScrobbler(source, target)
+	scrobbler := scrobbler.NewScrobbler(source, targets)
 
 	go scrobbler.Start()
 	slog.Info("Scrobbler started")

@@ -18,7 +18,7 @@ services:
       - 7276:7276
     environment:
       - SCROBBLET_SOURCE=Spotify
-      - SCROBBLET_TARGET=CSV
+      - SCROBBLET_TARGETS=CSV
     env_file:
       - .env
     restart: unless-stopped

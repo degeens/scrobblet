@@ -19,7 +19,7 @@ services:
       - 7276:7276
     environment:
       - SCROBBLET_SOURCE=Spotify
-      - SCROBBLET_TARGET=Koito
+      - SCROBBLET_TARGETS=Koito
     env_file:
       - .env
     depends_on:

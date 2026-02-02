@@ -9,6 +9,8 @@ import (
 
 type Config struct {
 	Spotify      spotify.Config
+	Koito        listenbrainz.Config
+	Maloja       listenbrainz.Config
 	ListenBrainz listenbrainz.Config
 	LastFm       lastfm.Config
 	CSV          csv.Config

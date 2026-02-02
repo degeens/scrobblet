@@ -95,7 +95,7 @@ The API server (`cmd/api/`) provides OAuth endpoints when using Spotify:
 
 All configuration is done via environment variables (see README.md for full list). Key variables:
 - `SCROBBLET_SOURCE`: Source type (e.g., "Spotify")
-- `SCROBBLET_TARGET`: Target type (e.g., "Koito", "ListenBrainz")
+- `SCROBBLET_TARGETS`: Target types (e.g., "Koito", "ListenBrainz")
 - `SCROBBLET_DATA_PATH`: Where tokens/data are persisted (default: `/etc/scrobblet`)
 
 ## Adding New Integrations

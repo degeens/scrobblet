@@ -107,7 +107,6 @@ func loadClientsConfig(sourceType sources.SourceType, targetTypes []targets.Targ
 		}
 	}
 
-	// Load configs for each target type
 	for _, targetType := range targetTypes {
 		switch targetType {
 		case targets.TargetKoito:

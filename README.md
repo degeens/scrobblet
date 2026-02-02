@@ -11,9 +11,9 @@
 [![License](https://img.shields.io/github/license/degeens/scrobblet)](LICENSE)
 [![Docker Pulls](https://img.shields.io/docker/pulls/degeens/scrobblet)](https://hub.docker.com/r/degeens/scrobblet)
 
-Scrobblet is a lightweight scrobbler for self-hosters. It tracks your listening activity from a music source and scrobbles it to your preferred target, and is easily extensible with new integrations.
+Scrobblet is a lightweight scrobbler for self-hosters. It tracks your listening activity from a music source and scrobbles it to your preferred targets, and is easily extensible with new integrations.
 
-Currently, Scrobblet supports **Spotify** as a source and can scrobble to **Last.fm**, **ListenBrainz** (including any ListenBrainz-compatible service), **Maloja**, **Koito**, or **CSV**. More sources and targets can be easily added. Feel free to [create a pull request](https://github.com/degeens/scrobblet/pulls) with your implementation or [open an issue](https://github.com/degeens/scrobblet/issues) to request a new integration.
+Currently, Scrobblet supports **Spotify** as a source and can scrobble to **Last.fm**, **ListenBrainz** (including any ListenBrainz-compatible service), **Maloja**, **Koito**, and **CSV**. More sources and targets can be easily added. Feel free to [create a pull request](https://github.com/degeens/scrobblet/pulls) with your implementation or [open an issue](https://github.com/degeens/scrobblet/issues) to request a new integration.
 
 > **⚠️ Warning**: This project is in early stages of development. Features and APIs may change without notice.
 

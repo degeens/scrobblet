@@ -20,7 +20,7 @@ All configuration is done through environment variables.
 | `SCROBBLET_DATA_PATH` | No | `/etc/scrobblet` | Path where application data is stored |
 | `SCROBBLET_LOG_LEVEL` | No | `INFO` | The log level. Options: `DEBUG`, `INFO`, `WARN`, `ERROR` |
 | `SCROBBLET_SOURCE` | Yes | - | Source to track. Options: `Spotify` |
-| `SCROBBLET_TARGETS` | Yes | - | Targets to scrobble to. Options: `LastFm`, `ListenBrainz`, `Maloja`, `Koito`, `CSV` |
+| `SCROBBLET_TARGETS` | Yes | - | Comma-separated list of targets to scrobble to. Options: `LastFm`, `ListenBrainz`, `Maloja`, `Koito`, `CSV` |
 
 ## Client Configuration
 

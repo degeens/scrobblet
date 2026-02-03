@@ -19,7 +19,7 @@ Currently, Scrobblet supports **Spotify** as a source and can scrobble to **Last
 
 ## Getting Started
 
-Create a `docker-compose.yml` file with your configuration:
+Here's a minimal `docker-compose.yml` file to get started with scrobbling from Spotify to CSV:
 
 ```yaml
 services:
@@ -31,34 +31,17 @@ services:
     ports:
       - 7276:7276
     environment:
-      - SCROBBLET_PORT=7276 # Optional
-      - SCROBBLET_DATA_PATH=/etc/scrobblet # Optional
-      - SCROBBLET_LOG_LEVEL=INFO # Optional
       - SCROBBLET_SOURCE=Spotify
-      - SCROBBLET_TARGETS=CSV,Koito
-      # Spotify (Required when SCROBBLET_SOURCE=Spotify)
+      - SCROBBLET_TARGETS=CSV
       - SPOTIFY_CLIENT_ID=your_spotify_client_id
       - SPOTIFY_CLIENT_SECRET=your_spotify_client_secret
       - SPOTIFY_REDIRECT_URL=http://127.0.0.1:7276/spotify/callback
-      # Last.fm (Required when SCROBBLET_TARGETS=LastFm)
-      - LASTFM_API_KEY=your_lastfm_api_key
-      - LASTFM_SHARED_SECRET=your_lastfm_shared_secret
-      - LASTFM_REDIRECT_URL=http://127.0.0.1:7276/lastfm/callback
-      # ListenBrainz (Required when SCROBBLET_TARGETS=ListenBrainz)
-      - LISTENBRAINZ_URL=https://api.listenbrainz.org  # Optional
-      - LISTENBRAINZ_TOKEN=your_listenbrainz_token
-      # Maloja (Required when SCROBBLET_TARGETS=Maloja)
-      - MALOJA_URL=your_maloja_url
-      - MALOJA_TOKEN=your_maloja_token
-      # Koito (Required when SCROBBLET_TARGETS=Koito)
-      - KOITO_URL=your_koito_url
-      - KOITO_TOKEN=your_koito_token
-      # CSV (Optional when SCROBBLET_TARGETS=CSV)
-      - CSV_FILE_PATH=/etc/scrobblet/scrobbles.csv # Optional
     restart: unless-stopped
 volumes:
   scrobblet-data:
 ```
+
+Set `SPOTIFY_CLIENT_ID`, `SPOTIFY_CLIENT_SECRET`, and `SPOTIFY_REDIRECT_URL` with your actual Spotify application credentials. See the [Configuration Guide](docs/configuration.md) for instructions on obtaining these.
 
 Start the service with `docker-compose up -d`.
 

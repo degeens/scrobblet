@@ -41,7 +41,7 @@ volumes:
   scrobblet-data:
 ```
 
-Set `SPOTIFY_CLIENT_ID`, `SPOTIFY_CLIENT_SECRET`, and `SPOTIFY_REDIRECT_URL` with your actual Spotify application credentials. See the [Configuration Guide](docs/configuration.md) for instructions on obtaining these.
+Set environment variables `SPOTIFY_CLIENT_ID`, `SPOTIFY_CLIENT_SECRET`, and `SPOTIFY_REDIRECT_URL` with your actual Spotify application credentials. See the [Configuration Guide](docs/configuration.md) for instructions on obtaining these.
 
 Start the service with `docker-compose up -d`.
 

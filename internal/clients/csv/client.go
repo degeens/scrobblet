@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -58,7 +59,7 @@ func (c *Client) WriteScrobble(trackedTrack *common.TrackedTrack) error {
 
 	// Write header if needed
 	if needsHeader {
-		header := []string{"Artist(s)", "Title", "Album", "Started At", "Ended At"}
+		header := []string{"Artists", "Title", "Album", "Track Number", "Duration", "Started At", "Ended At"}
 		if err := writer.Write(header); err != nil {
 			return fmt.Errorf("failed to write CSV header: %w", err)
 		}
@@ -66,13 +67,19 @@ func (c *Client) WriteScrobble(trackedTrack *common.TrackedTrack) error {
 
 	// Prepare record
 	artists := strings.Join(trackedTrack.Track.Artists, ", ")
+	title := trackedTrack.Track.Title
+	album := trackedTrack.Track.Album
+	trackNumber := strconv.Itoa(trackedTrack.Track.TrackNumber)
+	duration := strconv.Itoa(int(trackedTrack.Track.Duration / time.Second))
 	startedAt := trackedTrack.StartedAt.Format(time.RFC3339)
 	endedAt := trackedTrack.LastUpdatedAt.Format(time.RFC3339)
 
 	record := []string{
 		artists,
-		trackedTrack.Track.Title,
-		trackedTrack.Track.Album,
+		title,
+		album,
+		trackNumber,
+		duration,
 		startedAt,
 		endedAt,
 	}

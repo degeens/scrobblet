@@ -9,22 +9,25 @@ type Track struct {
 	Artists     []string
 	Title       string
 	Album       string
-	Duration    time.Duration
 	TrackNumber int
+	Duration    time.Duration
 }
 
 func (t *Track) Equals(other *Track) bool {
-	if t.Title != other.Title || t.Album != other.Album || t.Duration != other.Duration {
+	if t.Title != other.Title || t.Album != other.Album || t.TrackNumber != other.TrackNumber || t.Duration != other.Duration {
 		return false
 	}
+
 	if len(t.Artists) != len(other.Artists) {
 		return false
 	}
+
 	for i, artist := range t.Artists {
 		if artist != other.Artists[i] {
 			return false
 		}
 	}
+
 	return true
 }
 

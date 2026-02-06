@@ -116,9 +116,11 @@ To set up Koito:
 *Required only when `SCROBBLET_TARGETS=CSV`
 
 The CSV target writes completed scrobbles to a CSV file with the following format:
-- **Artist(s)**: Multiple artists joined with ", "
+- **Artists**: Multiple artists joined with ", "
 - **Title**: Track title
 - **Album**: Album name
+- **Track Number**: Track number on the album
+- **Duration**: Track duration in seconds
 - **Started At**: ISO 8601 timestamp when tracking started
 - **Ended At**: ISO 8601 timestamp when tracking ended
 

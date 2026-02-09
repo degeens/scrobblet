@@ -44,5 +44,5 @@ type TrackedTrack struct {
 }
 
 func (t *TrackedTrack) SlogArgs() []any {
-	return append(t.Track.SlogArgs(), "TrackDuration", t.Track.Duration, "TrackedDuration", t.Duration)
+	return append(t.Track.SlogArgs(), "TrackDuration", t.Track.Duration/time.Second, "TrackedDuration", t.Duration/time.Second)
 }

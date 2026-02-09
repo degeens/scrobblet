@@ -15,6 +15,10 @@ func NewLastFmTarget(client *lastfm.Client) *LastFmTarget {
 	}
 }
 
+func (t *LastFmTarget) TargetType() TargetType {
+	return TargetLastFm
+}
+
 func (t *LastFmTarget) SubmitPlayingTrack(track *common.Track) error {
 	req := t.toUpdateNowPlaying(track)
 

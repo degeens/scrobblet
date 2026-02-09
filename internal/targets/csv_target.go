@@ -15,6 +15,10 @@ func NewCSVTarget(client *csv.Client) *CSVTarget {
 	}
 }
 
+func (t *CSVTarget) TargetType() TargetType {
+	return TargetCSV
+}
+
 func (t *CSVTarget) SubmitPlayingTrack(track *common.Track) error {
 	// Only submit completed scrobbles
 	return nil

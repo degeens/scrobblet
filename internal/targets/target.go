@@ -21,6 +21,7 @@ const (
 )
 
 type Target interface {
+	TargetType() TargetType
 	SubmitPlayingTrack(track *common.Track) error
 	SubmitPlayedTrack(trackedTrack *common.TrackedTrack) error
 }
@@ -30,14 +31,14 @@ func New(targetType TargetType, clientsConfig clients.Config, scrobbletVersion s
 	case TargetKoito:
 		// Koito uses ListenBrainz-compatible API with custom base URL
 		client := listenbrainz.NewClient(clientsConfig.Koito.Token, clientsConfig.Koito.URL)
-		return client, NewListenBrainzTarget(client, scrobbletVersion), nil
+		return client, NewListenBrainzTarget(TargetKoito, client, scrobbletVersion), nil
 	case TargetMaloja:
 		// Maloja uses ListenBrainz-compatible API with custom base URL
 		client := listenbrainz.NewClient(clientsConfig.Maloja.Token, clientsConfig.Maloja.URL)
-		return client, NewListenBrainzTarget(client, scrobbletVersion), nil
+		return client, NewListenBrainzTarget(TargetMaloja, client, scrobbletVersion), nil
 	case TargetListenBrainz:
 		client := listenbrainz.NewClient(clientsConfig.ListenBrainz.Token, clientsConfig.ListenBrainz.URL)
-		return client, NewListenBrainzTarget(client, scrobbletVersion), nil
+		return client, NewListenBrainzTarget(TargetListenBrainz, client, scrobbletVersion), nil
 	case TargetLastFm:
 		client, err := lastfm.NewClient(clientsConfig.LastFm.APIKey, clientsConfig.LastFm.SharedSecret, clientsConfig.LastFm.RedirectURL, clientsConfig.LastFm.DataPath, scrobbletVersion)
 		if err != nil {

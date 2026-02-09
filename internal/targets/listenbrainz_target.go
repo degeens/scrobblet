@@ -9,15 +9,21 @@ import (
 )
 
 type ListenBrainzTarget struct {
+	targetType       TargetType
 	client           *listenbrainz.Client
 	scrobbletVersion string
 }
 
-func NewListenBrainzTarget(client *listenbrainz.Client, scrobbletVersion string) *ListenBrainzTarget {
+func NewListenBrainzTarget(targetType TargetType, client *listenbrainz.Client, scrobbletVersion string) *ListenBrainzTarget {
 	return &ListenBrainzTarget{
+		targetType:       targetType,
 		client:           client,
 		scrobbletVersion: scrobbletVersion,
 	}
+}
+
+func (t *ListenBrainzTarget) TargetType() TargetType {
+	return t.targetType
 }
 
 func (t *ListenBrainzTarget) SubmitPlayingTrack(track *common.Track) error {

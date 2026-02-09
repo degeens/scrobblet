@@ -27,15 +27,15 @@ func (s *Submitter) Start() {
 		case track := <-s.playingTrackChan:
 			slog.Info("Submitting now playing track", track.SlogArgs()...)
 
-			for i, target := range s.targets {
+			for _, target := range s.targets {
 				err := target.SubmitPlayingTrack(&track)
 				if err != nil {
-					slog.Error("Failed to submit now playing track", append(track.SlogArgs(), "target_index", i, "error", err.Error())...)
+					slog.Error("Failed to submit now playing track", append(track.SlogArgs(), "target", target.TargetType(), "error", err.Error())...)
 					continue
 					// todo: retry (with exponential backoff)
 				}
 
-				slog.Info("Now playing track submitted", append(track.SlogArgs(), "target_index", i)...)
+				slog.Info("Now playing track submitted", append(track.SlogArgs(), "target", target.TargetType())...)
 			}
 		case trackedTrack := <-s.playedTrackChan:
 			if !ShouldScrobble(trackedTrack.Duration, trackedTrack.Track.Duration) {
@@ -45,15 +45,15 @@ func (s *Submitter) Start() {
 
 			slog.Info("Track met scrobble rules, submitting track", trackedTrack.Track.SlogArgs()...)
 
-			for i, target := range s.targets {
+			for _, target := range s.targets {
 				err := target.SubmitPlayedTrack(&trackedTrack)
 				if err != nil {
-					slog.Error("Failed to submit track", append(trackedTrack.Track.SlogArgs(), "target_index", i, "error", err.Error())...)
+					slog.Error("Failed to submit track", append(trackedTrack.Track.SlogArgs(), "target", target.TargetType(), "error", err.Error())...)
 					continue
 					// todo: retry (with exponential backoff)
 				}
 
-				slog.Info("Track submitted", append(trackedTrack.Track.SlogArgs(), "target_index", i)...)
+				slog.Info("Track submitted", append(trackedTrack.Track.SlogArgs(), "target", target.TargetType())...)
 			}
 		}
 	}

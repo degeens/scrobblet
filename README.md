@@ -17,7 +17,7 @@ Currently, Scrobblet supports scrobbling from **Spotify** to **Last.fm**, **List
 
 > **⚠️ Warning**: This project is in early stages of development. Features and APIs may change without notice.
 
-## Getting Started
+## Installation
 
 Here's a minimal Docker Compose file to get started with scrobbling from Spotify to CSV:
 

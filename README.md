@@ -19,7 +19,7 @@ Currently, Scrobblet supports scrobbling from **Spotify** to **Last.fm**, **List
 
 ## Getting Started
 
-Here's a minimal `docker-compose.yml` file to get started with scrobbling from Spotify to CSV:
+Here's a minimal Docker Compose file to get started with scrobbling from Spotify to CSV:
 
 ```yaml
 services:
@@ -41,9 +41,9 @@ volumes:
   scrobblet-data:
 ```
 
-Set environment variables `SPOTIFY_CLIENT_ID`, `SPOTIFY_CLIENT_SECRET`, and `SPOTIFY_REDIRECT_URL` with your actual Spotify application credentials. See the [Configuration Guide](docs/configuration.md) for instructions on obtaining these.
+Set `SPOTIFY_CLIENT_ID`, `SPOTIFY_CLIENT_SECRET`, and `SPOTIFY_REDIRECT_URL` to your actual Spotify application credentials. See the [Spotify Configuration Guide](docs/configuration.md#spotify) for instructions on obtaining these.
 
-Start the service with `docker-compose up -d`.
+For detailed installation instructions, see the [Installation Guide](docs/installation.md).
 
 ## Configuration
 

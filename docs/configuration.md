@@ -37,18 +37,18 @@ All configuration is done through environment variables.
 To set up Spotify:
 1. Go to [Spotify Developer Dashboard](https://developer.spotify.com/dashboard)
 2. Create a new app
-3. Add `http://127.0.0.1:7276/spotify/callback` (or your custom URL) to Redirect URIs*
+3. Add `http://127.0.0.1:7276/spotify/callback` (or your custom URL) to Redirect URIs
 4. Copy the client ID and client secret
 5. Start Scrobblet with the client ID, client secret, and redirect URL configured
 6. Visit `http://localhost:7276/spotify/login` to authenticate
 
-*Spotify only allows HTTPS Redirect URIs unless you use an explicit IPv4 or IPv6 loopback address (e.g. `http://127.0.0.1:7276` or `http://[::1]:7276`). 
-
-If you cannot provide a valid redirect URI, you can intercept the callback and rewrite the address to your Scrobblet instance:
-1. Run `docker run --rm -p 8080:8080 mendhak/http-https-echo:39` on the machine where your browser runs
-2. Set the Spotify Redirect URI and `SPOTIFY_REDIRECT_URL` to `http://127.0.0.1:8080/spotify/callback`
-3. Visit `http://localhost:7276/spotify/login` to authenticate
-4. Replace `127.0.0.1:8080` with the address of your Scrobblet instance and open the updated URL
+> **⚠️ Spotify Redirect URI**: Spotify only allows **HTTPS** Redirect URIs unless you use an explicit IPv4 or IPv6 loopback address (e.g. `http://127.0.0.1:7276` or `http://[::1]:7276`).
+>
+> If you cannot provide a valid redirect URI, you can intercept the callback and rewrite the address to your Scrobblet instance:
+> 1. Run `docker run --rm -p 8080:8080 mendhak/http-https-echo:39` on the machine where your browser runs
+> 2. Set the Spotify Redirect URI and `SPOTIFY_REDIRECT_URL` to `http://127.0.0.1:8080/spotify/callback`
+> 3. Visit `http://localhost:7276/spotify/login` to authenticate
+> 4. Replace `127.0.0.1:8080` with the address of your Scrobblet instance and open the updated URL
 
 ### Last.fm
 
@@ -82,7 +82,7 @@ To set up ListenBrainz:
 2. Copy your user token
 3. Start Scrobblet with the user token configured
 
-**ListenBrainz-compatible API support**: Scrobblet can scrobble to any service that implements the ListenBrainz API specification. This includes the official ListenBrainz service, self-hosted ListenBrainz instances, or any other compatible implementation. Simply set `LISTENBRAINZ_URL` to point to your preferred service.
+> ✅ **ListenBrainz-compatible API support**: Scrobblet can scrobble to any service that implements the ListenBrainz API specification. This includes the official ListenBrainz service, self-hosted ListenBrainz instances, or any other compatible implementation. Simply set `LISTENBRAINZ_URL` to point to your preferred service.
 
 ### Maloja
 

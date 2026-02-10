@@ -19,11 +19,11 @@ Currently, Scrobblet supports scrobbling from **Spotify** to **Last.fm**, **List
 
 ## Features
 
-- **🪶 Lightweight**: Scrobblet is and will always be lightweight, perfect for self-hosting environments
-- **☁️Device-independent**: Communicates with streaming service APIs, so it doesn't matter which device you play your music on
-- **🎯 Multiple targets**: Scrobble to multiple services simultaneously
-- **🎵 Now playing support**: Broadcasts what you're currently listening to
-- **⚡ Adaptive polling**: The polling interval automatically adjusts based on your listening activity to reduce unnecessary load
+- **Lightweight**: Scrobblet is and will always be lightweight, perfect for self-hosting environments
+- **Device-independent**: Communicates with streaming service APIs, so it doesn't matter which device you play your music on
+- **Multiple targets**: Scrobble to multiple services simultaneously
+- **Now playing support**: Broadcasts what you're currently listening to
+- **Adaptive polling**: The polling interval automatically adjusts based on your listening activity to reduce unnecessary load
 
 ## Installation
 

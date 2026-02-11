@@ -10,18 +10,18 @@ import (
 )
 
 type ListenBrainzTarget struct {
-	targetType       TargetType
 	healthy          bool
 	lastHealthCheck  time.Time
+	targetType       TargetType
 	client           *listenbrainz.Client
 	scrobbletVersion string
 }
 
 func NewListenBrainzTarget(targetType TargetType, client *listenbrainz.Client, scrobbletVersion string) *ListenBrainzTarget {
 	return &ListenBrainzTarget{
-		targetType:       targetType,
 		healthy:          true,
 		lastHealthCheck:  time.Now(),
+		targetType:       targetType,
 		client:           client,
 		scrobbletVersion: scrobbletVersion,
 	}

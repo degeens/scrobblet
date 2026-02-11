@@ -3,6 +3,7 @@ package targets
 import (
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/degeens/scrobblet/internal/clients/listenbrainz"
 	"github.com/degeens/scrobblet/internal/common"
@@ -10,6 +11,8 @@ import (
 
 type ListenBrainzTarget struct {
 	targetType       TargetType
+	healthy          bool
+	lastHealthCheck  time.Time
 	client           *listenbrainz.Client
 	scrobbletVersion string
 }
@@ -17,9 +20,15 @@ type ListenBrainzTarget struct {
 func NewListenBrainzTarget(targetType TargetType, client *listenbrainz.Client, scrobbletVersion string) *ListenBrainzTarget {
 	return &ListenBrainzTarget{
 		targetType:       targetType,
+		healthy:          true,
+		lastHealthCheck:  time.Now(),
 		client:           client,
 		scrobbletVersion: scrobbletVersion,
 	}
+}
+
+func (t *ListenBrainzTarget) Healthy() (bool, time.Time) {
+	return t.healthy, t.lastHealthCheck
 }
 
 func (t *ListenBrainzTarget) TargetType() TargetType {
@@ -29,13 +38,31 @@ func (t *ListenBrainzTarget) TargetType() TargetType {
 func (t *ListenBrainzTarget) SubmitPlayingTrack(track *common.Track) error {
 	req := t.toPlayingNowSubmitListens(track)
 
-	return t.client.SubmitListens(req)
+	err := t.client.SubmitListens(req)
+	if err != nil {
+		t.healthy = false
+		t.lastHealthCheck = time.Now()
+		return err
+	}
+
+	t.healthy = true
+	t.lastHealthCheck = time.Now()
+	return nil
 }
 
 func (t *ListenBrainzTarget) SubmitPlayedTrack(trackedTrack *common.TrackedTrack) error {
 	req := t.toSingleSubmitListens(trackedTrack)
 
-	return t.client.SubmitListens(req)
+	err := t.client.SubmitListens(req)
+	if err != nil {
+		t.healthy = false
+		t.lastHealthCheck = time.Now()
+		return err
+	}
+
+	t.healthy = true
+	t.lastHealthCheck = time.Now()
+	return nil
 }
 
 func (t *ListenBrainzTarget) toPlayingNowSubmitListens(track *common.Track) *listenbrainz.SubmitListens {

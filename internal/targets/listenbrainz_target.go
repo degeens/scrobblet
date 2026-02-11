@@ -20,7 +20,7 @@ type ListenBrainzTarget struct {
 func NewListenBrainzTarget(targetType TargetType, client *listenbrainz.Client, scrobbletVersion string) *ListenBrainzTarget {
 	return &ListenBrainzTarget{
 		healthy:          true,
-		lastHealthCheck:  time.Now(),
+		lastHealthCheck:  time.Now().UTC(),
 		targetType:       targetType,
 		client:           client,
 		scrobbletVersion: scrobbletVersion,
@@ -41,12 +41,12 @@ func (t *ListenBrainzTarget) SubmitPlayingTrack(track *common.Track) error {
 	err := t.client.SubmitListens(req)
 	if err != nil {
 		t.healthy = false
-		t.lastHealthCheck = time.Now()
+		t.lastHealthCheck = time.Now().UTC()
 		return err
 	}
 
 	t.healthy = true
-	t.lastHealthCheck = time.Now()
+	t.lastHealthCheck = time.Now().UTC()
 	return nil
 }
 
@@ -56,12 +56,12 @@ func (t *ListenBrainzTarget) SubmitPlayedTrack(trackedTrack *common.TrackedTrack
 	err := t.client.SubmitListens(req)
 	if err != nil {
 		t.healthy = false
-		t.lastHealthCheck = time.Now()
+		t.lastHealthCheck = time.Now().UTC()
 		return err
 	}
 
 	t.healthy = true
-	t.lastHealthCheck = time.Now()
+	t.lastHealthCheck = time.Now().UTC()
 	return nil
 }
 

@@ -16,7 +16,7 @@ type SpotifySource struct {
 func NewSpotifySource(client *spotify.Client) *SpotifySource {
 	return &SpotifySource{
 		healthy:         true,
-		lastHealthCheck: time.Now(),
+		lastHealthCheck: time.Now().UTC(),
 		client:          client,
 	}
 }
@@ -33,14 +33,14 @@ func (s *SpotifySource) GetPlaybackState() (*PlaybackState, error) {
 	currentlyPlaying, err := s.client.GetCurrentlyPlayingTrack()
 	if err != nil {
 		s.healthy = false
-		s.lastHealthCheck = time.Now()
+		s.lastHealthCheck = time.Now().UTC()
 		return nil, err
 	}
 
 	playbackState := toPlaybackState(currentlyPlaying)
 
 	s.healthy = true
-	s.lastHealthCheck = time.Now()
+	s.lastHealthCheck = time.Now().UTC()
 	return playbackState, nil
 }
 

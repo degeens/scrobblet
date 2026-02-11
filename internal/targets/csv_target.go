@@ -16,7 +16,7 @@ type CSVTarget struct {
 func NewCSVTarget(client *csv.Client) *CSVTarget {
 	return &CSVTarget{
 		healthy:         true,
-		lastHealthCheck: time.Now(),
+		lastHealthCheck: time.Now().UTC(),
 		client:          client,
 	}
 }
@@ -38,11 +38,11 @@ func (t *CSVTarget) SubmitPlayedTrack(trackedTrack *common.TrackedTrack) error {
 	err := t.client.WriteScrobble(trackedTrack)
 	if err != nil {
 		t.healthy = false
-		t.lastHealthCheck = time.Now()
+		t.lastHealthCheck = time.Now().UTC()
 		return err
 	}
 
 	t.healthy = true
-	t.lastHealthCheck = time.Now()
+	t.lastHealthCheck = time.Now().UTC()
 	return nil
 }

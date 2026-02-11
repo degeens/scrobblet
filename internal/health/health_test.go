@@ -50,7 +50,7 @@ func (m *mockTarget) SubmitPlayedTrack(trackedTrack *common.TrackedTrack) error 
 }
 
 func TestCheckHealth_AllHealthy(t *testing.T) {
-	now := time.Now()
+	now := time.Now().UTC()
 
 	source := &mockSource{
 		healthy:         true,
@@ -80,7 +80,7 @@ func TestCheckHealth_AllHealthy(t *testing.T) {
 }
 
 func TestCheckHealth_UnhealthySource(t *testing.T) {
-	now := time.Now()
+	now := time.Now().UTC()
 
 	source := &mockSource{
 		healthy:         false,
@@ -110,7 +110,7 @@ func TestCheckHealth_UnhealthySource(t *testing.T) {
 }
 
 func TestCheckHealth_UnhealthyTarget(t *testing.T) {
-	now := time.Now()
+	now := time.Now().UTC()
 
 	source := &mockSource{
 		healthy:         true,
@@ -147,7 +147,7 @@ func TestCheckHealth_UnhealthyTarget(t *testing.T) {
 }
 
 func TestCheckHealth_NoTargets(t *testing.T) {
-	now := time.Now()
+	now := time.Now().UTC()
 
 	source := &mockSource{
 		healthy:         true,

@@ -5,6 +5,8 @@ import "net/http"
 func (app *application) routes() http.Handler {
 	mux := http.NewServeMux()
 
+	mux.HandleFunc("GET /health", app.health)
+
 	if app.spotifyClient != nil {
 		mux.HandleFunc("GET /spotify/login", app.spotifyLogin)
 		mux.HandleFunc("GET /spotify/callback", app.spotifyCallback)

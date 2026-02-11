@@ -16,6 +16,8 @@ const (
 )
 
 type Source interface {
+	Healthy() (bool, time.Time)
+	SourceType() SourceType
 	GetPlaybackState() (*PlaybackState, error)
 }
 

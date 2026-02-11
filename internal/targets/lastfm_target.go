@@ -1,18 +1,28 @@
 package targets
 
 import (
+	"time"
+
 	"github.com/degeens/scrobblet/internal/clients/lastfm"
 	"github.com/degeens/scrobblet/internal/common"
 )
 
 type LastFmTarget struct {
-	client *lastfm.Client
+	healthy         bool
+	lastHealthCheck time.Time
+	client          *lastfm.Client
 }
 
 func NewLastFmTarget(client *lastfm.Client) *LastFmTarget {
 	return &LastFmTarget{
-		client: client,
+		healthy:         true,
+		lastHealthCheck: time.Now(),
+		client:          client,
 	}
+}
+
+func (t *LastFmTarget) Healthy() (bool, time.Time) {
+	return t.healthy, t.lastHealthCheck
 }
 
 func (t *LastFmTarget) TargetType() TargetType {
@@ -22,13 +32,31 @@ func (t *LastFmTarget) TargetType() TargetType {
 func (t *LastFmTarget) SubmitPlayingTrack(track *common.Track) error {
 	req := t.toUpdateNowPlaying(track)
 
-	return t.client.UpdateNowPlaying(req)
+	err := t.client.UpdateNowPlaying(req)
+	if err != nil {
+		t.healthy = false
+		t.lastHealthCheck = time.Now()
+		return err
+	}
+
+	t.healthy = true
+	t.lastHealthCheck = time.Now()
+	return nil
 }
 
 func (t *LastFmTarget) SubmitPlayedTrack(trackedTrack *common.TrackedTrack) error {
 	req := t.toScrobble(trackedTrack)
 
-	return t.client.Scrobble([]lastfm.ScrobbleRequest{req})
+	err := t.client.Scrobble([]lastfm.ScrobbleRequest{req})
+	if err != nil {
+		t.healthy = false
+		t.lastHealthCheck = time.Now()
+		return err
+	}
+
+	t.healthy = true
+	t.lastHealthCheck = time.Now()
+	return nil
 }
 
 func (t *LastFmTarget) toUpdateNowPlaying(track *common.Track) *lastfm.UpdateNowPlayingRequest {

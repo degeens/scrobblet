@@ -31,7 +31,7 @@ func (app *application) spotifyCallback(w http.ResponseWriter, r *http.Request) 
 	}
 
 	w.WriteHeader(http.StatusOK)
-	_, err = w.Write([]byte("Spotify authentication successful!"))
+	_, err = w.Write([]byte("Spotify authentication successful! Feel free to close this browser tab."))
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
@@ -67,7 +67,7 @@ func (app *application) lastFmCallback(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusOK)
-	_, err = w.Write([]byte("Last.fm authentication successful!"))
+	_, err = w.Write([]byte("Last.fm authentication successful! Feel free to close this browser tab."))
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}

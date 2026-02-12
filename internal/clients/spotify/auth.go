@@ -11,8 +11,8 @@ import (
 	"golang.org/x/oauth2"
 )
 
-func (c *Client) GetAuthCodeURL() string {
-	return c.oauth2Config.AuthCodeURL("")
+func (c *Client) GetAuthCodeURL(state string) string {
+	return c.oauth2Config.AuthCodeURL(state)
 }
 
 func (c *Client) ExchangeAuthCodeForToken(ctx context.Context, code string) error {

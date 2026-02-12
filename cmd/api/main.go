@@ -15,10 +15,11 @@ import (
 var version = "undefined" // Will be overridden at build time
 
 type application struct {
-	source        *sources.Source
-	targets       *[]targets.Target
-	spotifyClient *spotify.Client
-	lastfmClient  *lastfm.Client
+	source         *sources.Source
+	targets        *[]targets.Target
+	spotifyClient  *spotify.Client
+	lastfmClient   *lastfm.Client
+	authStateStore *authStateStore
 }
 
 func main() {
@@ -45,8 +46,9 @@ func main() {
 	}
 
 	app := &application{
-		source:  &source,
-		targets: &targets,
+		source:         &source,
+		targets:        &targets,
+		authStateStore: newAuthStateStore(),
 	}
 	if spotifyClient, ok := sourceClient.(*spotify.Client); ok {
 		app.spotifyClient = spotifyClient

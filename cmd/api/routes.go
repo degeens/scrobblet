@@ -17,5 +17,5 @@ func (app *application) routes() http.Handler {
 		mux.HandleFunc("GET /lastfm/callback", app.lastFmCallback)
 	}
 
-	return logRequest(mux)
+	return rateLimit(logRequest(mux))
 }

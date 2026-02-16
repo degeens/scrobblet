@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/url"
 	"os"
+	"strconv"
 	"strings"
 
 	"github.com/degeens/scrobblet/internal/clients"
@@ -16,24 +17,30 @@ import (
 )
 
 type config struct {
-	port     string
-	dataPath string
-	logLevel string
-	source   sources.SourceType
-	targets  []targets.TargetType
-	clients  clients.Config
+	port           string
+	dataPath       string
+	logLevel       string
+	rateLimitRate  int
+	rateLimitBurst int
+	source         sources.SourceType
+	targets        []targets.TargetType
+	clients        clients.Config
 }
 
 const (
 	// Default values
-	defaultPort     = "7276"
-	defaultDataPath = "/etc/scrobblet"
-	defaultLogLevel = "INFO"
+	defaultPort           = "7276"
+	defaultDataPath       = "/etc/scrobblet"
+	defaultLogLevel       = "INFO"
+	defaultRateLimitRate  = 10
+	defaultRateLimitBurst = 100
 
 	// Environment variable keys
 	envPort                = "SCROBBLET_PORT"
 	envDataPath            = "SCROBBLET_DATA_PATH"
 	envLogLevel            = "SCROBBLET_LOG_LEVEL"
+	envRateLimitRate       = "SCROBBLET_RATE_LIMIT_RATE"
+	envRateLimitBurst      = "SCROBBLET_RATE_LIMIT_BURST"
 	envSource              = "SCROBBLET_SOURCE"
 	envTargets             = "SCROBBLET_TARGETS"
 	envSpotifyClientID     = "SPOTIFY_CLIENT_ID"
@@ -55,6 +62,16 @@ func loadConfig() (*config, error) {
 	port := getEnv(envPort, defaultPort)
 	dataPath := getEnv(envDataPath, defaultDataPath)
 	logLevel := getEnv(envLogLevel, defaultLogLevel)
+
+	rateLimitRate, err := getEnvAsInt(envRateLimitRate, defaultRateLimitRate)
+	if err != nil {
+		return nil, err
+	}
+
+	rateLimitBurst, err := getEnvAsInt(envRateLimitBurst, defaultRateLimitBurst)
+	if err != nil {
+		return nil, err
+	}
 
 	source, err := getRequiredEnv(envSource)
 	if err != nil {
@@ -82,12 +99,14 @@ func loadConfig() (*config, error) {
 	}
 
 	return &config{
-		port:     port,
-		dataPath: dataPath,
-		logLevel: logLevel,
-		source:   sourceType,
-		targets:  targetTypes,
-		clients:  clientsConfig,
+		port:           port,
+		dataPath:       dataPath,
+		logLevel:       logLevel,
+		rateLimitRate:  rateLimitRate,
+		rateLimitBurst: rateLimitBurst,
+		source:         sourceType,
+		targets:        targetTypes,
+		clients:        clientsConfig,
 	}, nil
 }
 
@@ -266,6 +285,21 @@ func getEnv(key string, defaultValue string) string {
 	}
 
 	return value
+}
+
+func getEnvAsInt(key string, defaultValue int) (int, error) {
+	value := os.Getenv(key)
+
+	if value == "" {
+		return defaultValue, nil
+	}
+
+	intValue, err := strconv.Atoi(value)
+	if err != nil {
+		return 0, fmt.Errorf("invalid integer value for %s", key)
+	}
+
+	return intValue, nil
 }
 
 func getRequiredEnv(key string) (string, error) {

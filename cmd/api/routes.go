@@ -17,5 +17,8 @@ func (app *application) routes() http.Handler {
 		mux.HandleFunc("GET /lastfm/callback", app.lastFmCallback)
 	}
 
-	return rateLimit(logRequest(mux))
+	rate := app.config.rateLimitRate
+	burst := app.config.rateLimitBurst
+
+	return rateLimit(rate, burst)(logRequest(mux))
 }

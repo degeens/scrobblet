@@ -20,6 +20,7 @@ type application struct {
 	spotifyClient  *spotify.Client
 	lastfmClient   *lastfm.Client
 	authStateStore *authStateStore
+	config         *config
 }
 
 func main() {
@@ -49,6 +50,7 @@ func main() {
 		source:         &source,
 		targets:        &targets,
 		authStateStore: newAuthStateStore(),
+		config:         cfg,
 	}
 	if spotifyClient, ok := sourceClient.(*spotify.Client); ok {
 		app.spotifyClient = spotifyClient

@@ -4,21 +4,33 @@ import (
 	"log/slog"
 	"net"
 	"net/http"
+	"net/url"
 )
 
 func logRequest(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		method := r.Method
-		uri := r.URL.RequestURI()
 		proto := r.Proto
+		method := r.Method
+		sanitizedURI := sanitizeURI(*r.URL)
 
 		ip := r.RemoteAddr
 		if host, _, err := net.SplitHostPort(r.RemoteAddr); err == nil {
 			ip = host
 		}
 
-		slog.Info("Received request", "method", method, "uri", uri, "proto", proto, "ip", ip)
+		slog.Info("Received request", "proto", proto, "method", method, "uri", sanitizedURI, "ip", ip)
 
 		next.ServeHTTP(w, r)
 	})
+}
+
+func sanitizeURI(u url.URL) string {
+	q := u.Query()
+
+	// Hide sensitive OAuth query parameters
+	q.Set("code", "hidden")
+	q.Set("state", "hidden")
+
+	u.RawQuery = q.Encode()
+	return u.RequestURI()
 }

@@ -1,4 +1,4 @@
-package main
+package middleware
 
 import (
 	"net/http"
@@ -6,7 +6,7 @@ import (
 	"golang.org/x/time/rate"
 )
 
-func rateLimit(r int, b int) func(http.Handler) http.Handler {
+func RateLimit(r int, b int) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		// Allow r requests per second sustained, up to b in a burst
 		limiter := rate.NewLimiter(rate.Limit(r), b)

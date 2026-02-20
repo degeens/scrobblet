@@ -1,6 +1,10 @@
 package main
 
-import "net/http"
+import (
+	"net/http"
+
+	"github.com/degeens/scrobblet/cmd/api/middleware"
+)
 
 func (app *application) routes() http.Handler {
 	mux := http.NewServeMux()
@@ -20,5 +24,5 @@ func (app *application) routes() http.Handler {
 	rate := app.config.RateLimitRate
 	burst := app.config.RateLimitBurst
 
-	return rateLimit(rate, burst)(logRequest(mux))
+	return middleware.RateLimit(rate, burst)(middleware.LogRequest(mux))
 }

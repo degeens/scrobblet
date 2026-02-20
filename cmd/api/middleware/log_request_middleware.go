@@ -1,4 +1,4 @@
-package main
+package middleware
 
 import (
 	"log/slog"
@@ -7,7 +7,7 @@ import (
 	"net/url"
 )
 
-func logRequest(next http.Handler) http.Handler {
+func LogRequest(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		proto := r.Proto
 		method := r.Method

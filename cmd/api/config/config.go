@@ -1,12 +1,6 @@
-package main
+package config
 
 import (
-	"fmt"
-	"net/url"
-	"os"
-	"strconv"
-	"strings"
-
 	"github.com/degeens/scrobblet/internal/clients"
 	"github.com/degeens/scrobblet/internal/clients/csv"
 	"github.com/degeens/scrobblet/internal/clients/lastfm"
@@ -16,59 +10,17 @@ import (
 	"github.com/degeens/scrobblet/internal/targets"
 )
 
-type config struct {
-	port           string
-	dataPath       string
-	logLevel       string
-	rateLimitRate  int
-	rateLimitBurst int
-	source         sources.SourceType
-	targets        []targets.TargetType
-	clients        clients.Config
-}
-
-const (
-	// Default values
-	defaultPort           = "7276"
-	defaultDataPath       = "/etc/scrobblet"
-	defaultLogLevel       = "INFO"
-	defaultRateLimitRate  = 10
-	defaultRateLimitBurst = 100
-
-	// Environment variable keys
-	envPort                = "SCROBBLET_PORT"
-	envDataPath            = "SCROBBLET_DATA_PATH"
-	envLogLevel            = "SCROBBLET_LOG_LEVEL"
-	envRateLimitRate       = "SCROBBLET_RATE_LIMIT_RATE"
-	envRateLimitBurst      = "SCROBBLET_RATE_LIMIT_BURST"
-	envSource              = "SCROBBLET_SOURCE"
-	envTargets             = "SCROBBLET_TARGETS"
-	envSpotifyClientID     = "SPOTIFY_CLIENT_ID"
-	envSpotifyClientSecret = "SPOTIFY_CLIENT_SECRET"
-	envSpotifyRedirectURL  = "SPOTIFY_REDIRECT_URL"
-	envKoitoURL            = "KOITO_URL"
-	envKoitoToken          = "KOITO_TOKEN"
-	envMalojaURL           = "MALOJA_URL"
-	envMalojaToken         = "MALOJA_TOKEN"
-	envListenBrainzURL     = "LISTENBRAINZ_URL"
-	envListenBrainzToken   = "LISTENBRAINZ_TOKEN"
-	envLastFmAPIKey        = "LASTFM_API_KEY"
-	envLastFmSharedSecret  = "LASTFM_SHARED_SECRET"
-	envLastFmRedirectURL   = "LASTFM_REDIRECT_URL"
-	envCSVFilePath         = "CSV_FILE_PATH"
-)
-
-func loadConfig() (*config, error) {
+func LoadConfig() (*Config, error) {
 	port := getEnv(envPort, defaultPort)
 	dataPath := getEnv(envDataPath, defaultDataPath)
 	logLevel := getEnv(envLogLevel, defaultLogLevel)
 
-	rateLimitRate, err := getEnvAsInt(envRateLimitRate, defaultRateLimitRate)
+	rateLimitRate, err := getIntEnv(envRateLimitRate, defaultRateLimitRate)
 	if err != nil {
 		return nil, err
 	}
 
-	rateLimitBurst, err := getEnvAsInt(envRateLimitBurst, defaultRateLimitBurst)
+	rateLimitBurst, err := getIntEnv(envRateLimitBurst, defaultRateLimitBurst)
 	if err != nil {
 		return nil, err
 	}
@@ -98,15 +50,15 @@ func loadConfig() (*config, error) {
 		return nil, err
 	}
 
-	return &config{
-		port:           port,
-		dataPath:       dataPath,
-		logLevel:       logLevel,
-		rateLimitRate:  rateLimitRate,
-		rateLimitBurst: rateLimitBurst,
-		source:         sourceType,
-		targets:        targetTypes,
-		clients:        clientsConfig,
+	return &Config{
+		Port:           port,
+		DataPath:       dataPath,
+		LogLevel:       logLevel,
+		RateLimitRate:  rateLimitRate,
+		RateLimitBurst: rateLimitBurst,
+		Source:         sourceType,
+		Targets:        targetTypes,
+		Clients:        clientsConfig,
 	}, nil
 }
 
@@ -275,119 +227,4 @@ func loadCSVConfig(dataPath string) (csv.Config, error) {
 	return csv.Config{
 		FilePath: filePath,
 	}, nil
-}
-
-func getEnv(key string, defaultValue string) string {
-	value := os.Getenv(key)
-
-	if value == "" {
-		return defaultValue
-	}
-
-	return value
-}
-
-func getEnvAsInt(key string, defaultValue int) (int, error) {
-	value := os.Getenv(key)
-
-	if value == "" {
-		return defaultValue, nil
-	}
-
-	intValue, err := strconv.Atoi(value)
-	if err != nil {
-		return 0, fmt.Errorf("invalid integer value for %s", key)
-	}
-
-	return intValue, nil
-}
-
-func getRequiredEnv(key string) (string, error) {
-	value := os.Getenv(key)
-
-	if value == "" {
-		return "", fmt.Errorf("required environment variable %s is not set", key)
-	}
-
-	return value, nil
-}
-
-func validateSource(source string) (sources.SourceType, error) {
-	switch source {
-	case string(sources.SourceSpotify):
-		return sources.SourceSpotify, nil
-	default:
-		return "", fmt.Errorf("invalid source: %s. Valid sources are: %s", source, sources.SourceSpotify)
-	}
-}
-
-func validateTargets(targetsString string) ([]targets.TargetType, error) {
-	targetStrings := strings.Split(targetsString, ",")
-	targetTypes := make([]targets.TargetType, 0, len(targetStrings))
-	seen := make(map[targets.TargetType]bool)
-
-	for _, targetString := range targetStrings {
-		targetString = strings.TrimSpace(targetString)
-
-		targetType, err := validateTarget(targetString)
-		if err != nil {
-			return nil, err
-		}
-
-		if seen[targetType] {
-			return nil, fmt.Errorf("duplicate target type: %s. Multiple targets of the same type are not supported", targetType)
-		}
-		seen[targetType] = true
-
-		targetTypes = append(targetTypes, targetType)
-	}
-
-	if len(targetTypes) == 0 {
-		return nil, fmt.Errorf("no targets specified in %s", envTargets)
-	}
-
-	return targetTypes, nil
-}
-
-func validateTarget(target string) (targets.TargetType, error) {
-	switch target {
-	case string(targets.TargetKoito):
-		return targets.TargetKoito, nil
-	case string(targets.TargetMaloja):
-		return targets.TargetMaloja, nil
-	case string(targets.TargetListenBrainz):
-		return targets.TargetListenBrainz, nil
-	case string(targets.TargetLastFm):
-		return targets.TargetLastFm, nil
-	case string(targets.TargetCSV):
-		return targets.TargetCSV, nil
-	default:
-		return "", fmt.Errorf("invalid target: %s. Valid targets are: %s, %s, %s, %s, %s", target, targets.TargetKoito, targets.TargetMaloja, targets.TargetListenBrainz, targets.TargetLastFm, targets.TargetCSV)
-	}
-}
-
-func validateRedirectURL(pathPrefix, redirectURL string) error {
-	parsedURL, err := url.Parse(redirectURL)
-	if err != nil {
-		return fmt.Errorf("invalid redirect URL: %w", err)
-	}
-
-	if parsedURL.Path != pathPrefix+"/callback" {
-		return fmt.Errorf("invalid redirect URL path: %s. Path must be /callback", parsedURL.Path)
-	}
-
-	return nil
-}
-
-func setURLPath(rawURL, path string) (string, error) {
-	parsedURL, err := url.Parse(rawURL)
-	if err != nil {
-		return "", fmt.Errorf("invalid URL: %w", err)
-	}
-
-	// Clear any existing path and set to the provided path
-	parsedURL.Path = path
-	parsedURL.RawPath = ""
-
-	return parsedURL.String(), nil
 }

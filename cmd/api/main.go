@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/degeens/scrobblet/cmd/api/config"
 	"github.com/degeens/scrobblet/internal/clients/lastfm"
 	"github.com/degeens/scrobblet/internal/clients/spotify"
 	"github.com/degeens/scrobblet/internal/scrobbler"
@@ -20,27 +21,27 @@ type application struct {
 	spotifyClient  *spotify.Client
 	lastfmClient   *lastfm.Client
 	authStateStore *authStateStore
-	config         *config
+	config         *config.Config
 }
 
 func main() {
-	cfg, err := loadConfig()
+	cfg, err := config.LoadConfig()
 	if err != nil {
 		slog.Error(err.Error())
 		os.Exit(1)
 	}
 
-	setDefaultLogger(cfg.logLevel)
+	setDefaultLogger(cfg.LogLevel)
 
 	slog.Info("Starting Scrobblet", "version", version)
 
-	sourceClient, source, err := sources.New(cfg.source, cfg.clients)
+	sourceClient, source, err := sources.New(cfg.Source, cfg.Clients)
 	if err != nil {
 		slog.Error(err.Error())
 		os.Exit(1)
 	}
 
-	targetClients, targets, err := targets.NewMultiple(cfg.targets, cfg.clients, version)
+	targetClients, targets, err := targets.NewMultiple(cfg.Targets, cfg.Clients, version)
 	if err != nil {
 		slog.Error(err.Error())
 		os.Exit(1)
@@ -66,8 +67,8 @@ func main() {
 	go scrobbler.Start()
 	slog.Info("Scrobbler started")
 
-	slog.Info("Listening on port :" + cfg.port)
-	err = http.ListenAndServe(":"+cfg.port, app.routes())
+	slog.Info("Listening on port :" + cfg.Port)
+	err = http.ListenAndServe(":"+cfg.Port, app.routes())
 	if err != nil {
 		slog.Error(err.Error())
 		os.Exit(1)

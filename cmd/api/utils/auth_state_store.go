@@ -1,4 +1,4 @@
-package main
+package utils
 
 import (
 	"crypto/rand"
@@ -17,20 +17,20 @@ type authState struct {
 	expiresAt time.Time
 }
 
-type authStateStore struct {
+type AuthStateStore struct {
 	mu     sync.Mutex
 	states map[string]authState // key is service name (e.g., "spotify", "lastfm")
 }
 
-func newAuthStateStore() *authStateStore {
-	return &authStateStore{
+func NewAuthStateStore() *AuthStateStore {
+	return &AuthStateStore{
 		states: make(map[string]authState),
 	}
 }
 
 // Generates a new random state parameter for a specific service and stores it.
 // Stores one state parameter per service; generating a new state overwrites the previous one.
-func (m *authStateStore) Generate(service string) (string, error) {
+func (m *AuthStateStore) Generate(service string) (string, error) {
 	b := make([]byte, 32)
 	if _, err := rand.Read(b); err != nil {
 		return "", err
@@ -50,7 +50,7 @@ func (m *authStateStore) Generate(service string) (string, error) {
 }
 
 // Checks if the state parameter is valid for the specified service and removes it
-func (m *authStateStore) Validate(service, state string) error {
+func (m *AuthStateStore) Validate(service, state string) error {
 	if state == "" {
 		return ErrInvalidState
 	}

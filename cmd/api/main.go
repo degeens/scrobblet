@@ -6,23 +6,13 @@ import (
 	"os"
 
 	"github.com/degeens/scrobblet/cmd/api/config"
-	"github.com/degeens/scrobblet/internal/clients/lastfm"
-	"github.com/degeens/scrobblet/internal/clients/spotify"
+	"github.com/degeens/scrobblet/cmd/api/utils"
 	"github.com/degeens/scrobblet/internal/scrobbler"
 	"github.com/degeens/scrobblet/internal/sources"
 	"github.com/degeens/scrobblet/internal/targets"
 )
 
 var version = "undefined" // Will be overridden at build time
-
-type application struct {
-	source         *sources.Source
-	targets        *[]targets.Target
-	spotifyClient  *spotify.Client
-	lastfmClient   *lastfm.Client
-	authStateStore *authStateStore
-	config         *config.Config
-}
 
 func main() {
 	cfg, err := config.LoadConfig()
@@ -47,28 +37,15 @@ func main() {
 		os.Exit(1)
 	}
 
-	app := &application{
-		source:         &source,
-		targets:        &targets,
-		authStateStore: newAuthStateStore(),
-		config:         cfg,
-	}
-	if spotifyClient, ok := sourceClient.(*spotify.Client); ok {
-		app.spotifyClient = spotifyClient
-	}
-	for _, client := range targetClients {
-		if lastfmClient, ok := client.(*lastfm.Client); ok {
-			app.lastfmClient = lastfmClient
-		}
-	}
-
 	scrobbler := scrobbler.NewScrobbler(source, targets)
+
+	authStateStore := utils.NewAuthStateStore()
 
 	go scrobbler.Start()
 	slog.Info("Scrobbler started")
 
 	slog.Info("Listening on port :" + cfg.Port)
-	err = http.ListenAndServe(":"+cfg.Port, app.routes())
+	err = http.ListenAndServe(":"+cfg.Port, routes(source, targets, sourceClient, targetClients, cfg, authStateStore))
 	if err != nil {
 		slog.Error(err.Error())
 		os.Exit(1)

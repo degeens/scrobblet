@@ -1,4 +1,4 @@
-package main
+package handlers
 
 const (
 	authenticationSucceeded = "Authentication successful! Feel free to close this browser tab."

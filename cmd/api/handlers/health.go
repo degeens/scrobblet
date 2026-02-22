@@ -1,4 +1,4 @@
-package main
+package handlers
 
 import (
 	"encoding/json"
@@ -6,6 +6,8 @@ import (
 	"time"
 
 	"github.com/degeens/scrobblet/internal/health"
+	"github.com/degeens/scrobblet/internal/sources"
+	"github.com/degeens/scrobblet/internal/targets"
 )
 
 const (
@@ -25,21 +27,23 @@ type ClientHealth struct {
 	Timestamp time.Time `json:"timestamp"`
 }
 
-func (app *application) health(w http.ResponseWriter, r *http.Request) {
-	healthCheck := health.CheckHealth(*app.source, *app.targets)
+func Health(source sources.Source, targets []targets.Target) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		healthCheck := health.CheckHealth(source, targets)
 
-	response := toHealthResponse(healthCheck)
+		response := toHealthResponse(healthCheck)
 
-	w.Header().Set("Content-Type", "application/json")
+		w.Header().Set("Content-Type", "application/json")
 
-	if healthCheck.Healthy {
-		w.WriteHeader(http.StatusOK)
-	} else {
-		w.WriteHeader(http.StatusServiceUnavailable)
-	}
+		if healthCheck.Healthy {
+			w.WriteHeader(http.StatusOK)
+		} else {
+			w.WriteHeader(http.StatusServiceUnavailable)
+		}
 
-	if err := json.NewEncoder(w).Encode(response); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		if err := json.NewEncoder(w).Encode(response); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
 	}
 }
 

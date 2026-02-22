@@ -27,9 +27,13 @@ func LogRequest(next http.Handler) http.Handler {
 func sanitizeURI(u url.URL) string {
 	q := u.Query()
 
-	// Hide sensitive OAuth query parameters
-	q.Set("code", "hidden")
-	q.Set("state", "hidden")
+	// Hide sensitive OAuth query parameters if present
+	if q.Has("code") {
+		q.Set("code", "hidden")
+	}
+	if q.Has("state") {
+		q.Set("state", "hidden")
+	}
 
 	u.RawQuery = q.Encode()
 	return u.RequestURI()

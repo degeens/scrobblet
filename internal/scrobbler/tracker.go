@@ -122,7 +122,7 @@ func (t *Tracker) switchToInactivePollingIntervalIfNeeded(ticker *time.Ticker, c
 	if time.Since(lastActivityTime) > inactivityThreshold && currentInterval != inactivePollInterval {
 		ticker.Reset(inactivePollInterval)
 
-		slog.Info("Switched to inactive polling interval", "interval", inactivePollInterval)
+		slog.Info("Switched to inactive polling interval", "interval", inactivePollInterval/time.Second)
 
 		return inactivePollInterval
 	}
@@ -134,7 +134,7 @@ func (t *Tracker) switchToActivePollingIntervalIfNeeded(ticker *time.Ticker, cur
 	if currentInterval != activePollInterval {
 		ticker.Reset(activePollInterval)
 
-		slog.Info("Switched to active polling interval", "interval", activePollInterval)
+		slog.Info("Switched to active polling interval", "interval", activePollInterval/time.Second)
 
 		return activePollInterval
 	}

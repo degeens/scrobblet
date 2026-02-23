@@ -10,8 +10,8 @@ import (
 )
 
 func validateSource(source string) (sources.SourceType, error) {
-	switch source {
-	case string(sources.SourceSpotify):
+	switch strings.ToLower(strings.TrimSpace(source)) {
+	case strings.ToLower(string(sources.SourceSpotify)):
 		return sources.SourceSpotify, nil
 	default:
 		return "", fmt.Errorf("invalid source: %s. Valid sources are: %s", source, sources.SourceSpotify)
@@ -24,8 +24,6 @@ func validateTargets(targetsString string) ([]targets.TargetType, error) {
 	seen := make(map[targets.TargetType]bool)
 
 	for _, targetString := range targetStrings {
-		targetString = strings.TrimSpace(targetString)
-
 		targetType, err := validateTarget(targetString)
 		if err != nil {
 			return nil, err
@@ -39,24 +37,20 @@ func validateTargets(targetsString string) ([]targets.TargetType, error) {
 		targetTypes = append(targetTypes, targetType)
 	}
 
-	if len(targetTypes) == 0 {
-		return nil, fmt.Errorf("no targets specified in %s", envTargets)
-	}
-
 	return targetTypes, nil
 }
 
 func validateTarget(target string) (targets.TargetType, error) {
-	switch target {
-	case string(targets.TargetKoito):
+	switch strings.ToLower(strings.TrimSpace(target)) {
+	case strings.ToLower(string(targets.TargetKoito)):
 		return targets.TargetKoito, nil
-	case string(targets.TargetMaloja):
+	case strings.ToLower(string(targets.TargetMaloja)):
 		return targets.TargetMaloja, nil
-	case string(targets.TargetListenBrainz):
+	case strings.ToLower(string(targets.TargetListenBrainz)):
 		return targets.TargetListenBrainz, nil
-	case string(targets.TargetLastFm):
+	case strings.ToLower(string(targets.TargetLastFm)):
 		return targets.TargetLastFm, nil
-	case string(targets.TargetCSV):
+	case strings.ToLower(string(targets.TargetCSV)):
 		return targets.TargetCSV, nil
 	default:
 		return "", fmt.Errorf("invalid target: %s. Valid targets are: %s, %s, %s, %s, %s", target, targets.TargetKoito, targets.TargetMaloja, targets.TargetListenBrainz, targets.TargetLastFm, targets.TargetCSV)

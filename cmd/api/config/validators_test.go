@@ -51,7 +51,7 @@ func TestValidateSource(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			got, err := validateSource(tt.source)
 			if (err != nil) != tt.wantErr {
-				t.Fatalf("validateSource(%q) error = %v, wantErr %v", tt.source, err, tt.wantErr)
+				t.Fatalf("validateSource(%q) err = %v, wantErr %v", tt.source, err != nil, tt.wantErr)
 			}
 			if got != tt.want {
 				t.Errorf("validateSource(%q) = %q, want %q", tt.source, got, tt.want)
@@ -121,10 +121,89 @@ func TestValidateTargets(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			got, err := validateTargets(tt.targets)
 			if (err != nil) != tt.wantErr {
-				t.Fatalf("validateTargets(%q) error = %v, wantErr %v", tt.targets, err, tt.wantErr)
+				t.Fatalf("validateTargets(%q) err = %v, wantErr %v", tt.targets, err != nil, tt.wantErr)
 			}
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("validateTargets(%q) = %v, want %v", tt.targets, got, tt.want)
+			}
+		})
+	}
+}
+
+func TestValidateRedirectURL(t *testing.T) {
+	tests := []struct {
+		name        string
+		url         string
+		validPath   string
+		wantErr     bool
+		wantErrText string
+	}{
+		{
+			name:        "valid http scheme, host, and path",
+			url:         "http://example.com/spotify/callback",
+			validPath:   "/spotify/callback",
+			wantErr:     false,
+			wantErrText: "",
+		},
+		{
+			name:        "valid https scheme, host, and path",
+			url:         "https://example.com/lastfm/callback",
+			validPath:   "/lastfm/callback",
+			wantErr:     false,
+			wantErrText: "",
+		},
+		{
+			name:        "invalid scheme",
+			url:         "ftp://example.com/spotify/callback",
+			validPath:   "/spotify/callback",
+			wantErr:     true,
+			wantErrText: "invalid URL scheme: \"ftp\". Scheme must be http or https",
+		},
+		{
+			name:        "empty host",
+			url:         "http:///spotify/callback",
+			validPath:   "/spotify/callback",
+			wantErr:     true,
+			wantErrText: "invalid URL: host must not be empty",
+		},
+		{
+			name:        "invalid path",
+			url:         "http://example.com/other",
+			validPath:   "/spotify/callback",
+			wantErr:     true,
+			wantErrText: "invalid URL path: \"/other\". Path must be \"/spotify/callback\"",
+		},
+		{
+			name:        "empty url",
+			url:         "",
+			validPath:   "/spotify/callback",
+			wantErr:     true,
+			wantErrText: "invalid URL scheme: \"\". Scheme must be http or https",
+		},
+		{
+			name:        "missing scheme",
+			url:         "example.com/spotify/callback",
+			validPath:   "/spotify/callback",
+			wantErr:     true,
+			wantErrText: "invalid URL scheme: \"\". Scheme must be http or https",
+		},
+		{
+			name:        "missing path",
+			url:         "http://example.com",
+			validPath:   "/spotify/callback",
+			wantErr:     true,
+			wantErrText: "invalid URL path: \"\". Path must be \"/spotify/callback\"",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := validateRedirectURL(tt.url, tt.validPath)
+			if (err != nil) != tt.wantErr {
+				t.Fatalf("validateRedirectURL(%q, %q) err = %v, wantErr %v", tt.url, tt.validPath, err != nil, tt.wantErr)
+			}
+			if tt.wantErr && err.Error() != tt.wantErrText {
+				t.Errorf("validateRedirectURL(%q, %q) errText = %q, wantErrText %q", tt.url, tt.validPath, err.Error(), tt.wantErrText)
 			}
 		})
 	}

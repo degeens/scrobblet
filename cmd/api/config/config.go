@@ -134,7 +134,7 @@ func loadSpotifyConfig(dataPath string) (spotify.Config, error) {
 		return spotify.Config{}, err
 	}
 
-	err = validateRedirectURL("/spotify", redirectURL)
+	err = validateRedirectURL(redirectURL, "/spotify/callback")
 	if err != nil {
 		return spotify.Config{}, err
 	}
@@ -208,7 +208,7 @@ func loadLastFmConfig(dataPath string) (lastfm.Config, error) {
 		return lastfm.Config{}, err
 	}
 
-	err = validateRedirectURL("/lastfm", redirectURL)
+	err = validateRedirectURL(redirectURL, "/lastfm/callback")
 	if err != nil {
 		return lastfm.Config{}, err
 	}

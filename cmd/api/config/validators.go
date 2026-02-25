@@ -57,14 +57,22 @@ func validateTarget(target string) (targets.TargetType, error) {
 	}
 }
 
-func validateRedirectURL(pathPrefix, redirectURL string) error {
+func validateRedirectURL(redirectURL, validPath string) error {
 	parsedURL, err := url.Parse(redirectURL)
 	if err != nil {
-		return fmt.Errorf("invalid redirect URL: %w", err)
+		return fmt.Errorf("invalid URL: %w", err)
 	}
 
-	if parsedURL.Path != pathPrefix+"/callback" {
-		return fmt.Errorf("invalid redirect URL path: %s. Path must be /callback", parsedURL.Path)
+	if parsedURL.Scheme != "http" && parsedURL.Scheme != "https" {
+		return fmt.Errorf("invalid URL scheme: %q. Scheme must be http or https", parsedURL.Scheme)
+	}
+
+	if parsedURL.Host == "" {
+		return fmt.Errorf("invalid URL: host must not be empty")
+	}
+
+	if parsedURL.Path != validPath {
+		return fmt.Errorf("invalid URL path: %q. Path must be %q", parsedURL.Path, validPath)
 	}
 
 	return nil

@@ -8,10 +8,6 @@ import (
 	"github.com/degeens/scrobblet/internal/targets"
 )
 
-func TestError(t *testing.T) {
-	t.Errorf("This test is failing")
-}
-
 func TestValidateSource(t *testing.T) {
 	tests := []struct {
 		name    string

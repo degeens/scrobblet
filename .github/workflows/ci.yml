@@ -54,7 +54,10 @@ jobs:
         with:
           report-path: './ctrf-report.json'
           github-report: true
+          pull-request-report: true
         if: always()
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   lint:
     name: Lint

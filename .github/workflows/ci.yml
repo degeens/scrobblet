@@ -43,8 +43,18 @@ jobs:
       - name: Download dependencies
         run: go mod download
 
+      - name: Install CTRF reporter
+        run: go install github.com/ctrf-io/go-ctrf-json-reporter/cmd/go-ctrf-json-reporter@latest
+
       - name: Run tests
-        run: go test ./...
+        run: go test -json ./... | go-ctrf-json-reporter -output ctrf-report.json
+
+      - name: Publish Test Report
+        uses: ctrf-io/github-test-reporter@v1
+        with:
+          report-path: './ctrf-report.json'
+          github-report: true
+        if: always()
 
   lint:
     name: Lint

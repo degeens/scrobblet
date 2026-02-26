@@ -8,6 +8,7 @@ on:
 
 permissions:
   contents: read
+  pull-requests: write
 
 jobs:
   build:
@@ -53,8 +54,11 @@ jobs:
         uses: ctrf-io/github-test-reporter@v1
         with:
           report-path: './ctrf-report.json'
-          github-report: true
+          github-report: ${{ github.EVENT_NAME == 'push' }}
+          pull-request-report: ${{ github.EVENT_NAME == 'pull_request' }}
         if: always()
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   lint:
     name: Lint

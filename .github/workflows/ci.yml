@@ -53,7 +53,7 @@ jobs:
         uses: ctrf-io/github-test-reporter@v1
         with:
           report-path: './ctrf-report.json'
-          file-report: true
+          github-report: true
         if: always()
 
   lint:

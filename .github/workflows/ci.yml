@@ -49,7 +49,7 @@ jobs:
       - name: Run tests
         run: go test -json ./... | go-ctrf-json-reporter -output ctrf-report.json
 
-      - name: Publish Test Report
+      - name: Publish test report
         uses: ctrf-io/github-test-reporter@v1
         with:
           report-path: './ctrf-report.json'

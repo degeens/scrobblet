@@ -22,4 +22,6 @@ type AdditionalInfo struct {
 	SubmissionClient        string   `json:"submission_client"`
 	SubmissionClientVersion string   `json:"submission_client_version"`
 	TrackNumber             string   `json:"tracknumber"`
+	Duration                int      `json:"duration"`        // In seconds
+	DurationPlayed          int      `json:"duration_played"` // In seconds
 }

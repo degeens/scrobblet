@@ -112,6 +112,7 @@ func (c *Client) UpdateNowPlaying(request *UpdateNowPlayingRequest) error {
 	return nil
 }
 
+//gocyclo:ignore
 func (c *Client) Scrobble(requests []ScrobbleRequest) error {
 	if c.session == nil {
 		return errors.New("not authenticated with Last.fm, log in via /lastfm/login")

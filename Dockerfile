@@ -1,8 +1,7 @@
 FROM golang:1.25-alpine AS builder
 ARG VERSION=dev
 ENV CGO_ENABLED=0 \
-    GOOS=linux \
-    GOARCH=amd64
+    GOOS=linux
 WORKDIR /build
 COPY go.mod go.sum ./
 RUN go mod download

@@ -29,6 +29,12 @@ Returns the health status of the source and target clients.
 | `200 OK` | All clients are healthy |
 | `503 Service Unavailable` | One or more clients are unhealthy |
 
+##### Headers
+
+| Header | Value |
+|---|---|
+| `Content-Type` | `application/json` |
+
 ##### Body
 
 ```json
@@ -70,7 +76,7 @@ Visit this URL in a browser to authenticate Scrobblet with your Spotify account.
 
 #### Response
 
-##### Body
+##### Status
 
 | Status | Description |
 |---|---|
@@ -104,10 +110,24 @@ This endpoint is called automatically by Spotify after the user authorizes the a
 | `400 Bad Request` | Invalid `code` or `state` parameter |
 | `500 Internal Server Error` | Failed to exchange the authorization code for a token |
 
+##### Headers
+
+| Header | Value |
+|---|---|
+| `Content-Type` | `text/plain; charset=utf-8` |
+
 ##### Body
+
+On success (`200 OK`):
 
 ```
 Authentication successful! Feel free to close this browser tab.
+```
+
+On failure (`400 Bad Request`, `500 Internal Server Error`):
+
+```
+Authentication failed. Please try again.
 ```
 
 ### GET /api/lastfm/login
@@ -153,8 +173,22 @@ This endpoint is called automatically by Last.fm after the user authorizes the a
 | `400 Bad Request` | Invalid `token` parameter |
 | `500 Internal Server Error` | Failed to exchange the token for a session key |
 
+##### Headers
+
+| Header | Value |
+|---|---|
+| `Content-Type` | `text/plain; charset=utf-8` |
+
 ##### Body
+
+On success (`200 OK`):
 
 ```
 Authentication successful! Feel free to close this browser tab.
+```
+
+On failure (`400 Bad Request`, `500 Internal Server Error`):
+
+```
+Authentication failed. Please try again.
 ```

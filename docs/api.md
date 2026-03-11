@@ -9,6 +9,8 @@ The port is configurable via `SCROBBLET_PORT`. See [Configuration Guide](configu
 ## Table of Contents
 - [Endpoints](#endpoints)
   - [GET /health](#get-health)
+  - [GET /spotify/login](#get-spotifylogin)
+  - [GET /spotify/callback](#get-spotifycallback)
 
 ## Endpoints
 
@@ -55,3 +57,53 @@ Returns the health status of the source and target clients.
 | `targets[].status` | Target health status. Options: `healthy`, `unhealthy` |
 | `targets[].timestamp` | Time of the last target health check |
 
+
+### GET /spotify/login
+
+Initiates the Spotify OAuth 2.0 authorization flow by redirecting the browser to Spotify's authorization page. 
+
+Visit this URL in a browser to authenticate Scrobblet with your Spotify account. See [Configuration Guide](configuration.md#spotify) for setup instructions.
+
+**Only available when `SCROBBLET_SOURCE=Spotify`.**
+
+#### Response
+
+##### Body
+
+| Status | Description |
+|---|---|
+| `302 Found` | Redirect to Spotify authorization page |
+| `500 Internal Server Error` | Failed to redirect |
+
+### GET /spotify/callback
+
+Handles the OAuth 2.0 callback from Spotify. Validates the state parameter and exchanges the authorization code for an access token.
+
+This endpoint is called automatically by Spotify after the user authorizes the app.
+
+**Only available when `SCROBBLET_SOURCE=Spotify`.**
+
+#### Request
+
+##### Query Parameters
+
+| Parameter | Required | Description |
+|---|---|---|
+| `code` | Yes | Authorization code provided by Spotify |
+| `state` | Yes | State parameter echoed back by Spotify (validated against stored value) |
+
+#### Response
+
+##### Status
+
+| Status | Description |
+|---|---|
+| `200 OK` | Authentication successful |
+| `400 Bad Request` | Invalid `code` or `state` parameter |
+| `500 Internal Server Error` | Failed to exchange the authorization code for a token |
+
+##### Body
+
+```
+Authentication successful! Feel free to close this browser tab.
+```

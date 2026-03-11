@@ -28,7 +28,7 @@ func (c *Client) ExchangeAuthCodeForToken(ctx context.Context, code string) erro
 
 func (c *Client) refreshTokenIfNeeded() error {
 	if c.oauth2Token == nil {
-		return errors.New("not authenticated with Spotify, log in via /spotify/login")
+		return errors.New("not authenticated with Spotify, log in via /api/spotify/login")
 	}
 
 	// TokenSource automatically handles token refresh when needed

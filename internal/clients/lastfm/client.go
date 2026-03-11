@@ -52,7 +52,7 @@ func NewClient(apiKey, sharedSecret, redirectURL, dataPath, scrobbletVersion str
 
 func (c *Client) UpdateNowPlaying(request *UpdateNowPlayingRequest) error {
 	if c.session == nil {
-		return errors.New("not authenticated with Last.fm, log in via /lastfm/login")
+		return errors.New("not authenticated with Last.fm, log in via /api/lastfm/login")
 	}
 
 	params := map[string]string{
@@ -115,7 +115,7 @@ func (c *Client) UpdateNowPlaying(request *UpdateNowPlayingRequest) error {
 //gocyclo:ignore
 func (c *Client) Scrobble(requests []ScrobbleRequest) error {
 	if c.session == nil {
-		return errors.New("not authenticated with Last.fm, log in via /lastfm/login")
+		return errors.New("not authenticated with Last.fm, log in via /api/lastfm/login")
 	}
 
 	if len(requests) == 0 {

@@ -16,17 +16,17 @@ import (
 func routes(source sources.Source, targets []targets.Target, sourceClient any, targetClients []any, config *config.Config, authStateStore *utils.AuthStateStore) http.Handler {
 	mux := http.NewServeMux()
 
-	mux.HandleFunc("GET /health", handlers.Health(source, targets))
+	mux.HandleFunc("GET /api/health", handlers.Health(source, targets))
 
 	if spotifyClient, ok := sourceClient.(*spotify.Client); ok {
-		mux.HandleFunc("GET /spotify/login", handlers.SpotifyLogin(spotifyClient, authStateStore))
-		mux.HandleFunc("GET /spotify/callback", handlers.SpotifyCallback(spotifyClient, authStateStore))
+		mux.HandleFunc("GET /api/spotify/login", handlers.SpotifyLogin(spotifyClient, authStateStore))
+		mux.HandleFunc("GET /api/spotify/callback", handlers.SpotifyCallback(spotifyClient, authStateStore))
 	}
 
 	for _, client := range targetClients {
 		if lastfmClient, ok := client.(*lastfm.Client); ok {
-			mux.HandleFunc("GET /lastfm/login", handlers.LastFmLogin(lastfmClient))
-			mux.HandleFunc("GET /lastfm/callback", handlers.LastFmCallback(lastfmClient))
+			mux.HandleFunc("GET /api/lastfm/login", handlers.LastFmLogin(lastfmClient))
+			mux.HandleFunc("GET /api/lastfm/callback", handlers.LastFmCallback(lastfmClient))
 			break
 		}
 	}

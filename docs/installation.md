@@ -24,7 +24,7 @@ services:
       - SCROBBLET_TARGETS=CSV
       - SPOTIFY_CLIENT_ID=your_spotify_client_id
       - SPOTIFY_CLIENT_SECRET=your_spotify_client_secret
-      - SPOTIFY_REDIRECT_URL=http://127.0.0.1:7276/spotify/callback
+      - SPOTIFY_REDIRECT_URL=http://127.0.0.1:7276/api/spotify/callback
     restart: unless-stopped
 volumes:
   scrobblet-data:

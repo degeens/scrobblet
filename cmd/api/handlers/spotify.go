@@ -52,6 +52,7 @@ func SpotifyCallback(spotifyClient *spotify.Client, authStateStore *utils.AuthSt
 			return
 		}
 
+		w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 		w.WriteHeader(http.StatusOK)
 		_, err = w.Write([]byte(authenticationSucceeded))
 		if err != nil {

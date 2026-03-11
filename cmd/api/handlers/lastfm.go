@@ -43,6 +43,7 @@ func LastFmCallback(lastfmClient *lastfm.Client) http.HandlerFunc {
 			return
 		}
 
+		w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 		w.WriteHeader(http.StatusOK)
 		_, err = w.Write([]byte(authenticationSucceeded))
 		if err != nil {

@@ -1,6 +1,6 @@
 # Configuration Guide
 
-All configuration is done through environment variables.
+This guide covers all available Scrobblet configuration options, which are set through environment variables.
 
 ## Table of Contents
 - [General Configuration](#general-configuration)

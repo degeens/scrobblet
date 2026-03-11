@@ -1,6 +1,6 @@
 # API Reference
 
-Scrobblet exposes a small HTTP API for health checking and authentication flows.
+This reference covers all HTTP endpoints exposed by Scrobblet for health checking and OAuth authentication flows.
 
 **Default base URL:** `http://localhost:7276`
 

@@ -23,7 +23,7 @@ jobs:
 
       - name: Extract metadata (tags, labels) for Docker
         id: meta
-        uses: docker/metadata-action@c769610e5c78046ecf9befd8fea79ffa76f360b4
+        uses: docker/metadata-action@b13d25e5fcf2e04305d8aedc9a6c28ebe258e934
         with:
           images: degeens/scrobblet
 

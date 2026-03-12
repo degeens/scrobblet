@@ -2,10 +2,6 @@
 
 This reference covers all HTTP endpoints exposed by Scrobblet for health checking and OAuth authentication flows.
 
-**Default base URL:** `http://localhost:7276`
-
-The port is configurable via `SCROBBLET_PORT`. See [Configuration Guide](configuration.md) for more details.
-
 ## Table of Contents
 - [Endpoints](#endpoints)
   - [GET /api/health](#get-apihealth)
@@ -98,7 +94,7 @@ This endpoint is called automatically by Spotify after the user authorizes the a
 | Parameter | Required | Description |
 |---|---|---|
 | `code` | Yes | Authorization code provided by Spotify |
-| `state` | Yes | State parameter echoed back by Spotify (validated against stored value) |
+| `state` | Yes | State parameter echoed back by Spotify |
 
 #### Response
 

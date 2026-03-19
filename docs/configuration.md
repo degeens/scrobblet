@@ -123,8 +123,6 @@ To set up Koito:
 |----------|----------|---------|-------------|
 | `CSV_FILE_PATH` | No | `${SCROBBLET_DATA_PATH}/scrobbles.csv` | Path to the CSV file where scrobbles will be written |
 
-*Required only when `SCROBBLET_TARGETS=CSV`
-
 The CSV target writes completed scrobbles to a CSV file with the following format:
 - **Artists**: Multiple artists joined with ", "
 - **Title**: Track title

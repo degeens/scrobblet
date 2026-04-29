@@ -28,6 +28,8 @@ This guide covers all available Scrobblet configuration options, which are set t
 
 ### Spotify
 
+> **ℹ️ Spotify Premium account required**: Scrobblet uses Spotify's Web API to fetch your currently playing track. Since February 11, 2026, all newly created Development Mode apps require a Spotify Premium account. As of March 9, 2026, this requirement also applies to all existing apps. See the [Spotify Developer Blog](https://developer.spotify.com/blog/2026-02-06-update-on-developer-access-and-platform-security) for full details.
+
 | Variable | Required | Default | Description |
 |----------|----------|---------|-------------|
 | `SPOTIFY_CLIENT_ID` | Yes* | - | Your Spotify app Client ID |

@@ -7,6 +7,16 @@ import (
 	"net/url"
 )
 
+type statusRecorder struct {
+	http.ResponseWriter
+	status int
+}
+
+func (r *statusRecorder) WriteHeader(status int) {
+	r.status = status
+	r.ResponseWriter.WriteHeader(status)
+}
+
 func LogRequest(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		proto := r.Proto
@@ -18,9 +28,11 @@ func LogRequest(next http.Handler) http.Handler {
 			ip = host
 		}
 
-		slog.Info("Received request", "proto", proto, "method", method, "uri", sanitizedURI, "ip", ip)
+		statusRecorder := &statusRecorder{ResponseWriter: w}
 
-		next.ServeHTTP(w, r)
+		next.ServeHTTP(statusRecorder, r)
+
+		slog.Info("Received request", "proto", proto, "method", method, "uri", sanitizedURI, "status", statusRecorder.status, "ip", ip)
 	})
 }
 

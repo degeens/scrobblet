@@ -34,5 +34,5 @@ func routes(source sources.Source, targets []targets.Target, sourceClient any, t
 	rate := config.RateLimitRate
 	burst := config.RateLimitBurst
 
-	return middleware.RateLimit(rate, burst)(middleware.LogRequest(mux))
+	return middleware.LogRequest(middleware.RateLimit(rate, burst)(mux))
 }

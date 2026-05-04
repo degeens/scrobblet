@@ -1,0 +1,14 @@
+{{define "now-playing"}}
+  <div class="now-playing" id="now-playing-card"{{if not .NowPlaying}} style="display:none"{{end}}>
+    <div class="np-label">
+      <span class="np-status{{if and .NowPlaying .NowPlaying.IsPlaying}} np-status-playing{{else}} np-status-paused{{end}}" id="np-status"></span>
+      <span id="np-label-text">{{if and .NowPlaying .NowPlaying.IsPlaying}}Now Playing{{else}}Paused{{end}}</span>
+    </div>
+    <div class="np-title" id="np-title">{{if .NowPlaying}}{{.NowPlaying.Title}}{{end}}</div>
+    <div class="np-meta" id="np-meta">{{if .NowPlaying}}{{.NowPlaying.Artist}}{{end}}</div>
+    <div class="np-progress-row">
+      <div class="np-bar-wrap"><div class="np-bar" id="np-bar"></div></div>
+      <div class="np-time" id="np-time"></div>
+    </div>
+  </div>
+{{end}}

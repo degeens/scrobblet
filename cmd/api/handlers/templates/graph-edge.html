@@ -1,0 +1,8 @@
+{{define "graph-edge"}}
+      <path id="{{.ID}}"
+            d="M {{.X1}},{{.Y1}} C {{.MidX}},{{.Y1}} {{.MidX}},{{.Y2}} {{.X2}},{{.Y2}}"
+            fill="none"
+            stroke="{{if .Active}}#1db954{{else}}#444{{end}}"
+            stroke-width="1.5"
+            marker-end="{{if .Active}}url(#arrow-green){{else}}url(#arrow){{end}}" />
+{{end}}

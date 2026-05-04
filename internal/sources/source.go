@@ -24,6 +24,7 @@ type Source interface {
 type PlaybackState struct {
 	Track     *common.Track
 	Position  time.Duration
+	IsPlaying bool
 	Timestamp time.Time
 }
 

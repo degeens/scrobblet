@@ -2,9 +2,12 @@ package scrobbler
 
 import (
 	"log/slog"
+	"strings"
+	"sync"
 	"time"
 
 	"github.com/degeens/scrobblet/internal/common"
+	"github.com/degeens/scrobblet/internal/events"
 	"github.com/degeens/scrobblet/internal/sources"
 )
 
@@ -19,14 +22,25 @@ type Tracker struct {
 	source           sources.Source
 	playingTrackChan chan common.Track
 	playedTrackChan  chan<- common.TrackedTrack
+	bus              *events.Bus
+
+	mu          sync.RWMutex
+	lastPlayback *sources.PlaybackState
 }
 
-func NewTracker(source sources.Source, playingTrackChan chan common.Track, playedTrackChan chan<- common.TrackedTrack) *Tracker {
+func NewTracker(source sources.Source, playingTrackChan chan common.Track, playedTrackChan chan<- common.TrackedTrack, bus *events.Bus) *Tracker {
 	return &Tracker{
 		source:           source,
 		playingTrackChan: playingTrackChan,
 		playedTrackChan:  playedTrackChan,
+		bus:              bus,
 	}
+}
+
+func (t *Tracker) LastPlaybackState() *sources.PlaybackState {
+	t.mu.RLock()
+	defer t.mu.RUnlock()
+	return t.lastPlayback
 }
 
 func (t *Tracker) Start() {
@@ -43,13 +57,24 @@ func (t *Tracker) Start() {
 			continue
 		}
 
+		t.mu.Lock()
+		prevPlayback := t.lastPlayback
+		t.lastPlayback = playbackState
+		t.mu.Unlock()
+
+		trackEnded := false
 		if t.isTrackChange(playbackState, trackedTrack) || t.isTrackReplay(playbackState, trackedTrack) {
 			t.sendPlayedTrack(trackedTrack)
 			trackedTrack = nil
+			trackEnded = true
 		}
 
 		if playbackState == nil {
 			slog.Debug("No track playing")
+
+			if trackEnded {
+				t.publishTrackChange(nil)
+			}
 
 			pollInterval = t.switchToInactivePollingIntervalIfNeeded(ticker, pollInterval, lastActivity)
 
@@ -73,8 +98,13 @@ func (t *Tracker) Start() {
 			slog.Info("Track is being tracked", trackedTrack.SlogArgs()...)
 
 			t.sendPlayingTrack(trackedTrack.Track)
+			t.publishTrackChange(playbackState)
 
 			continue
+		}
+
+		if prevPlayback != nil && prevPlayback.IsPlaying != playbackState.IsPlaying {
+			t.publishTrackChange(playbackState)
 		}
 
 		positionDiff := playbackState.Position - trackedTrack.LastPosition
@@ -94,6 +124,19 @@ func (t *Tracker) Start() {
 			slog.Info("Seek or pause detected", trackedTrack.SlogArgs()...)
 		}
 	}
+}
+
+func (t *Tracker) publishTrackChange(state *sources.PlaybackState) {
+	e := events.Event{Type: events.EventTrackChange}
+	if state != nil {
+		e.Artist = strings.Join(state.Track.Artists, ", ")
+		e.Title = state.Track.Title
+		e.Album = state.Track.Album
+		e.DurationMs = int64(state.Track.Duration / time.Millisecond)
+		e.IsPlaying = state.IsPlaying
+		e.PositionMs = int64(state.Position / time.Millisecond)
+	}
+	t.bus.Publish(e)
 }
 
 func (t *Tracker) isTrackChange(playbackState *sources.PlaybackState, trackedTrack *common.TrackedTrack) bool {

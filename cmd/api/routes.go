@@ -9,14 +9,18 @@ import (
 	"github.com/degeens/scrobblet/cmd/api/utils"
 	"github.com/degeens/scrobblet/internal/clients/lastfm"
 	"github.com/degeens/scrobblet/internal/clients/spotify"
+	"github.com/degeens/scrobblet/internal/events"
 	"github.com/degeens/scrobblet/internal/sources"
 	"github.com/degeens/scrobblet/internal/targets"
 )
 
-func routes(source sources.Source, targets []targets.Target, sourceClient any, targetClients []any, config *config.Config, authStateStore *utils.AuthStateStore) http.Handler {
+func routes(source sources.Source, targets []targets.Target, provider handlers.PlaybackStateProvider, sourceClient any, targetClients []any, config *config.Config, authStateStore *utils.AuthStateStore, bus *events.Bus) http.Handler {
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("GET /api/health", handlers.Health(source, targets))
+	mux.HandleFunc("GET /api/events", handlers.Events(bus))
+	mux.Handle("GET /static/", handlers.Static())
+	mux.HandleFunc("GET /", handlers.Graph(source, provider, targets))
 
 	if spotifyClient, ok := sourceClient.(*spotify.Client); ok {
 		mux.HandleFunc("GET /api/spotify/login", handlers.SpotifyLogin(spotifyClient, authStateStore))

@@ -1,0 +1,13 @@
+{{define "graph"}}
+  <div class="card">
+    <svg id="graph-svg" width="{{.SVGWidth}}" height="{{.SVGHeight}}" xmlns="http://www.w3.org/2000/svg">
+      {{template "graph-defs" .}}
+      {{template "graph-edge" .SourceEdge}}
+      {{range .Edges}}{{template "graph-edge" .}}{{end}}
+      {{template "graph-node" .Source}}
+      {{template "graph-node" .ScrobbletNode}}
+      {{range .Targets}}{{template "graph-node" .}}{{end}}
+    </svg>
+    {{template "graph-legend" .}}
+  </div>
+{{end}}

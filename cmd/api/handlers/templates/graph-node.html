@@ -1,0 +1,20 @@
+{{define "graph-node"}}
+      {{if .ID}}<rect id="{{.ID}}"{{else}}<rect{{end}} x="{{.BoxX}}" y="{{.BoxY}}" width="140" height="50"
+            rx="8" fill="{{.Fill}}" stroke="{{.Stroke}}" stroke-width="1.5" />
+      {{if .Role}}
+      <text x="{{add .BoxX 70}}" y="{{add .BoxY 18}}"
+            text-anchor="middle" fill="#888" font-size="10" font-family="sans-serif" letter-spacing="1">{{.Role}}</text>
+      <text x="{{add .BoxX 70}}" y="{{add .BoxY 37}}"
+            text-anchor="middle" fill="#fff" font-size="14" font-weight="600" font-family="sans-serif">{{.Label}}</text>
+      {{else}}
+      <text x="{{add .BoxX 70}}" y="{{add .BoxY 30}}"
+            text-anchor="middle" fill="#fff" font-size="14" font-weight="700" font-family="sans-serif">{{.Label}}</text>
+      {{end}}
+      {{if .ShowHealth}}
+        {{if .Healthy}}
+        <circle cx="{{add .BoxX 127}}" cy="{{add .BoxY 11}}" r="5" fill="#1db954" />
+        {{else}}
+        <circle cx="{{add .BoxX 127}}" cy="{{add .BoxY 11}}" r="5" fill="#e74c3c" />
+        {{end}}
+      {{end}}
+{{end}}

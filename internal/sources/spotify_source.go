@@ -63,6 +63,7 @@ func toPlaybackState(currentlyPlaying *spotify.CurrentlyPlayingTrack) *PlaybackS
 			Duration:    time.Duration(currentlyPlaying.Item.Duration) * time.Millisecond,
 		},
 		Position:  time.Duration(currentlyPlaying.Progress) * time.Millisecond,
+		IsPlaying: currentlyPlaying.IsPlaying,
 		Timestamp: time.Now().UTC(),
 	}
 }

@@ -7,6 +7,7 @@ import (
 
 	"github.com/degeens/scrobblet/cmd/api/config"
 	"github.com/degeens/scrobblet/cmd/api/utils"
+	"github.com/degeens/scrobblet/internal/events"
 	"github.com/degeens/scrobblet/internal/scrobbler"
 	"github.com/degeens/scrobblet/internal/sources"
 	"github.com/degeens/scrobblet/internal/targets"
@@ -37,7 +38,9 @@ func main() {
 		os.Exit(1)
 	}
 
-	scrobbler := scrobbler.NewScrobbler(source, targets)
+	bus := events.NewBus()
+
+	scrobbler := scrobbler.NewScrobbler(source, targets, bus)
 
 	authStateStore := utils.NewAuthStateStore()
 
@@ -45,7 +48,7 @@ func main() {
 	slog.Info("Scrobbler started")
 
 	slog.Info("Listening on port :" + cfg.Port)
-	err = http.ListenAndServe(":"+cfg.Port, routes(source, targets, sourceClient, targetClients, cfg, authStateStore))
+	err = http.ListenAndServe(":"+cfg.Port, routes(source, targets, scrobbler, sourceClient, targetClients, cfg, authStateStore, bus))
 	if err != nil {
 		slog.Error(err.Error())
 		os.Exit(1)

@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Scrobblet</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <div>
+    <h1>Scrobblet</h1>
+  </div>
+
+  {{template "now-playing" .}}
+  {{template "graph" .}}
+
+  <script>
+  window.__SCROBBLET__ = {
+    targets: {{.JSTargets}},
+    nowPlaying: {{if .NowPlaying}}{positionMs:{{.NowPlaying.PositionMs}},durationMs:{{.NowPlaying.DurationMs}},isPlaying:{{.NowPlaying.IsPlaying}}}{{else}}null{{end}}
+  };
+  </script>
+  <script src="/static/app.js"></script>
+</body>
+</html>

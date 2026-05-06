@@ -2,7 +2,6 @@ package health
 
 import (
 	"testing"
-	"time"
 
 	"github.com/degeens/scrobblet/internal/common"
 	"github.com/degeens/scrobblet/internal/sources"
@@ -10,13 +9,12 @@ import (
 )
 
 type mockSource struct {
-	healthy         bool
-	lastHealthCheck time.Time
-	sourceType      sources.SourceType
+	healthy    bool
+	sourceType sources.SourceType
 }
 
-func (m *mockSource) Healthy() (bool, time.Time) {
-	return m.healthy, m.lastHealthCheck
+func (m *mockSource) Healthy() bool {
+	return m.healthy
 }
 
 func (m *mockSource) SourceType() sources.SourceType {
@@ -28,13 +26,12 @@ func (m *mockSource) GetPlaybackState() (*sources.PlaybackState, error) {
 }
 
 type mockTarget struct {
-	healthy         bool
-	lastHealthCheck time.Time
-	targetType      targets.TargetType
+	healthy    bool
+	targetType targets.TargetType
 }
 
-func (m *mockTarget) Healthy() (bool, time.Time) {
-	return m.healthy, m.lastHealthCheck
+func (m *mockTarget) Healthy() bool {
+	return m.healthy
 }
 
 func (m *mockTarget) TargetType() targets.TargetType {
@@ -50,18 +47,14 @@ func (m *mockTarget) SubmitPlayedTrack(trackedTrack *common.TrackedTrack) error 
 }
 
 func TestCheckHealth_AllHealthy(t *testing.T) {
-	now := time.Now().UTC()
-
 	source := &mockSource{
-		healthy:         true,
-		lastHealthCheck: now,
-		sourceType:      sources.SourceSpotify,
+		healthy:    true,
+		sourceType: sources.SourceSpotify,
 	}
 
 	target := &mockTarget{
-		healthy:         true,
-		lastHealthCheck: now,
-		targetType:      targets.TargetLastFm,
+		healthy:    true,
+		targetType: targets.TargetLastFm,
 	}
 
 	result := CheckHealth(source, []targets.Target{target})
@@ -70,28 +63,24 @@ func TestCheckHealth_AllHealthy(t *testing.T) {
 		t.Error("Expected overall health to be true when source and targets are all healthy")
 	}
 
-	assertSourceHealthCheck(t, result.Source, true, sources.SourceSpotify, now)
+	assertSourceHealthCheck(t, result.Source, true, sources.SourceSpotify)
 
 	if len(result.Targets) != 1 {
 		t.Fatalf("Expected 1 target, got %d", len(result.Targets))
 	}
 
-	assertTargetHealthCheck(t, result.Targets[0], true, targets.TargetLastFm, now)
+	assertTargetHealthCheck(t, result.Targets[0], true, targets.TargetLastFm)
 }
 
 func TestCheckHealth_UnhealthySource(t *testing.T) {
-	now := time.Now().UTC()
-
 	source := &mockSource{
-		healthy:         false,
-		lastHealthCheck: now,
-		sourceType:      sources.SourceSpotify,
+		healthy:    false,
+		sourceType: sources.SourceSpotify,
 	}
 
 	target := &mockTarget{
-		healthy:         true,
-		lastHealthCheck: now,
-		targetType:      targets.TargetLastFm,
+		healthy:    true,
+		targetType: targets.TargetLastFm,
 	}
 
 	result := CheckHealth(source, []targets.Target{target})
@@ -100,34 +89,29 @@ func TestCheckHealth_UnhealthySource(t *testing.T) {
 		t.Error("Expected overall health to be false when source is unhealthy")
 	}
 
-	assertSourceHealthCheck(t, result.Source, false, sources.SourceSpotify, now)
+	assertSourceHealthCheck(t, result.Source, false, sources.SourceSpotify)
 
 	if len(result.Targets) != 1 {
 		t.Fatalf("Expected 1 target, got %d", len(result.Targets))
 	}
 
-	assertTargetHealthCheck(t, result.Targets[0], true, targets.TargetLastFm, now)
+	assertTargetHealthCheck(t, result.Targets[0], true, targets.TargetLastFm)
 }
 
 func TestCheckHealth_UnhealthyTarget(t *testing.T) {
-	now := time.Now().UTC()
-
 	source := &mockSource{
-		healthy:         true,
-		lastHealthCheck: now,
-		sourceType:      sources.SourceSpotify,
+		healthy:    true,
+		sourceType: sources.SourceSpotify,
 	}
 
 	target1 := &mockTarget{
-		healthy:         true,
-		lastHealthCheck: now,
-		targetType:      targets.TargetLastFm,
+		healthy:    true,
+		targetType: targets.TargetLastFm,
 	}
 
 	target2 := &mockTarget{
-		healthy:         false,
-		lastHealthCheck: now,
-		targetType:      targets.TargetListenBrainz,
+		healthy:    false,
+		targetType: targets.TargetListenBrainz,
 	}
 
 	result := CheckHealth(source, []targets.Target{target1, target2})
@@ -136,23 +120,20 @@ func TestCheckHealth_UnhealthyTarget(t *testing.T) {
 		t.Error("Expected overall health to be false when a target is unhealthy")
 	}
 
-	assertSourceHealthCheck(t, result.Source, true, sources.SourceSpotify, now)
+	assertSourceHealthCheck(t, result.Source, true, sources.SourceSpotify)
 
 	if len(result.Targets) != 2 {
 		t.Fatalf("Expected 2 targets, got %d", len(result.Targets))
 	}
 
-	assertTargetHealthCheck(t, result.Targets[0], true, targets.TargetLastFm, now)
-	assertTargetHealthCheck(t, result.Targets[1], false, targets.TargetListenBrainz, now)
+	assertTargetHealthCheck(t, result.Targets[0], true, targets.TargetLastFm)
+	assertTargetHealthCheck(t, result.Targets[1], false, targets.TargetListenBrainz)
 }
 
 func TestCheckHealth_NoTargets(t *testing.T) {
-	now := time.Now().UTC()
-
 	source := &mockSource{
-		healthy:         true,
-		lastHealthCheck: now,
-		sourceType:      sources.SourceSpotify,
+		healthy:    true,
+		sourceType: sources.SourceSpotify,
 	}
 
 	result := CheckHealth(source, []targets.Target{})
@@ -161,14 +142,14 @@ func TestCheckHealth_NoTargets(t *testing.T) {
 		t.Error("Expected overall health to be true when source is healthy and no targets")
 	}
 
-	assertSourceHealthCheck(t, result.Source, true, sources.SourceSpotify, now)
+	assertSourceHealthCheck(t, result.Source, true, sources.SourceSpotify)
 
 	if len(result.Targets) != 0 {
 		t.Errorf("Expected 0 targets, got %d", len(result.Targets))
 	}
 }
 
-func assertSourceHealthCheck(t *testing.T, actualSourceHealthCheck SourceHealthCheck, expectedHealthy bool, expectedSourceType sources.SourceType, expectedLastHealthCheck time.Time) {
+func assertSourceHealthCheck(t *testing.T, actualSourceHealthCheck SourceHealthCheck, expectedHealthy bool, expectedSourceType sources.SourceType) {
 	t.Helper()
 
 	if actualSourceHealthCheck.Healthy != expectedHealthy {
@@ -178,13 +159,9 @@ func assertSourceHealthCheck(t *testing.T, actualSourceHealthCheck SourceHealthC
 	if actualSourceHealthCheck.SourceType != expectedSourceType {
 		t.Errorf("Expected source type to be %s, got %s", expectedSourceType, actualSourceHealthCheck.SourceType)
 	}
-
-	if actualSourceHealthCheck.LastHealthCheck != expectedLastHealthCheck {
-		t.Error("Expected source last health check time to match")
-	}
 }
 
-func assertTargetHealthCheck(t *testing.T, actualTargetHealthCheck TargetHealthCheck, expectedHealthy bool, expectedTargetType targets.TargetType, expectedLastHealthCheck time.Time) {
+func assertTargetHealthCheck(t *testing.T, actualTargetHealthCheck TargetHealthCheck, expectedHealthy bool, expectedTargetType targets.TargetType) {
 	t.Helper()
 
 	if actualTargetHealthCheck.Healthy != expectedHealthy {
@@ -193,9 +170,5 @@ func assertTargetHealthCheck(t *testing.T, actualTargetHealthCheck TargetHealthC
 
 	if actualTargetHealthCheck.TargetType != expectedTargetType {
 		t.Errorf("Expected target type to be %s, got %s", expectedTargetType, actualTargetHealthCheck.TargetType)
-	}
-
-	if actualTargetHealthCheck.LastHealthCheck != expectedLastHealthCheck {
-		t.Error("Expected target last health check time to match")
 	}
 }

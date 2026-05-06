@@ -50,6 +50,61 @@ func NewClient(apiKey, sharedSecret, redirectURL, dataPath, scrobbletVersion str
 	return c, nil
 }
 
+// user.getinfo does not require authentication, but passing the session key causes Last.fm to validate it.
+func (c *Client) ValidateSession() error {
+	if c.session == nil {
+		return errors.New("not authenticated with Last.fm, log in via /api/lastfm/login")
+	}
+
+	u, err := url.Parse(c.baseURL)
+	if err != nil {
+		return err
+	}
+
+	q := u.Query()
+	q.Set("method", "user.getInfo")
+	q.Set("api_key", c.apiKey)
+	q.Set("sk", c.session.Key)
+	q.Set("format", "json")
+	u.RawQuery = q.Encode()
+
+	req, err := http.NewRequest("GET", u.String(), nil)
+	if err != nil {
+		return err
+	}
+	req.Header.Set("User-Agent", c.userAgent)
+
+	resp, err := c.httpClient.Do(req)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if closeErr := resp.Body.Close(); closeErr != nil && err == nil {
+			err = closeErr
+		}
+	}()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return fmt.Errorf("failed to read response body: %w", err)
+	}
+
+	var getInfoResp struct {
+		Error   *int    `json:"error"`
+		Message *string `json:"message"`
+	}
+
+	if err := json.Unmarshal(body, &getInfoResp); err != nil {
+		return err
+	}
+
+	if getInfoResp.Error != nil {
+		return fmt.Errorf("Last.fm session is not valid. API error (code %d): %s", *getInfoResp.Error, *getInfoResp.Message)
+	}
+
+	return nil
+}
+
 func (c *Client) UpdateNowPlaying(request *UpdateNowPlayingRequest) error {
 	if c.session == nil {
 		return errors.New("not authenticated with Last.fm, log in via /api/lastfm/login")

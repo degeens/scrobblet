@@ -24,6 +24,18 @@ func NewClient(filePath string) *Client {
 	}
 }
 
+func (c *Client) ValidateAccess() error {
+	dir := filepath.Dir(c.filePath)
+	if err := os.MkdirAll(dir, 0755); err != nil {
+		return err
+	}
+	f, err := os.OpenFile(c.filePath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		return err
+	}
+	return f.Close()
+}
+
 func (c *Client) WriteScrobble(trackedTrack *common.TrackedTrack) error {
 	c.mu.Lock()
 	defer c.mu.Unlock()

@@ -2,7 +2,6 @@ package targets
 
 import (
 	"fmt"
-	"time"
 
 	"github.com/degeens/scrobblet/internal/clients"
 	"github.com/degeens/scrobblet/internal/clients/csv"
@@ -22,7 +21,7 @@ const (
 )
 
 type Target interface {
-	Healthy() (bool, time.Time)
+	Healthy() bool
 	TargetType() TargetType
 	SubmitPlayingTrack(track *common.Track) error
 	SubmitPlayedTrack(trackedTrack *common.TrackedTrack) error

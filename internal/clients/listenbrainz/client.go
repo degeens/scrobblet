@@ -3,6 +3,7 @@ package listenbrainz
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -30,6 +31,46 @@ func NewClient(token string, customBaseURL ...string) *Client {
 		httpClient: &http.Client{Timeout: 15 * time.Second},
 		token:      token,
 	}
+}
+
+func (c *Client) ValidateToken() error {
+	url := c.baseURL + "/1/validate-token"
+
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return err
+	}
+
+	req.Header.Set("Authorization", "Token "+c.token)
+
+	res, err := c.httpClient.Do(req)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if closeErr := res.Body.Close(); closeErr != nil && err == nil {
+			err = closeErr
+		}
+	}()
+
+	body, err := io.ReadAll(res.Body)
+	if err != nil {
+		return fmt.Errorf("failed to read response body: %w", err)
+	}
+
+	var tokenValidation struct {
+		Valid bool `json:"valid"`
+	}
+
+	if err := json.Unmarshal(body, &tokenValidation); err != nil {
+		return err
+	}
+
+	if !tokenValidation.Valid {
+		return errors.New("ListenBrainz token is not valid")
+	}
+
+	return nil
 }
 
 func (c *Client) SubmitListens(request *SubmitListens) error {

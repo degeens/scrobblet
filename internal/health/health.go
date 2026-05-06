@@ -1,8 +1,6 @@
 package health
 
 import (
-	"time"
-
 	"github.com/degeens/scrobblet/internal/sources"
 	"github.com/degeens/scrobblet/internal/targets"
 )
@@ -14,15 +12,13 @@ type HealthCheck struct {
 }
 
 type SourceHealthCheck struct {
-	SourceType      sources.SourceType
-	Healthy         bool
-	LastHealthCheck time.Time
+	SourceType sources.SourceType
+	Healthy    bool
 }
 
 type TargetHealthCheck struct {
-	TargetType      targets.TargetType
-	Healthy         bool
-	LastHealthCheck time.Time
+	TargetType targets.TargetType
+	Healthy    bool
 }
 
 func CheckHealth(source sources.Source, targets []targets.Target) HealthCheck {
@@ -39,9 +35,9 @@ func CheckHealth(source sources.Source, targets []targets.Target) HealthCheck {
 }
 
 func checkSource(source sources.Source) (SourceHealthCheck, bool) {
-	healthy, lastHealthCheck := source.Healthy()
+	healthy := source.Healthy()
 
-	healthCheck := SourceHealthCheck{SourceType: source.SourceType(), Healthy: healthy, LastHealthCheck: lastHealthCheck}
+	healthCheck := SourceHealthCheck{SourceType: source.SourceType(), Healthy: healthy}
 
 	return healthCheck, healthy
 }
@@ -52,13 +48,13 @@ func checkTargets(targets []targets.Target) ([]TargetHealthCheck, bool) {
 	healthChecks := make([]TargetHealthCheck, 0, len(targets))
 
 	for _, target := range targets {
-		healthy, lastHealthCheck := target.Healthy()
+		healthy := target.Healthy()
 
 		if !healthy {
 			allHealthy = false
 		}
 
-		healthCheck := TargetHealthCheck{TargetType: target.TargetType(), Healthy: healthy, LastHealthCheck: lastHealthCheck}
+		healthCheck := TargetHealthCheck{TargetType: target.TargetType(), Healthy: healthy}
 
 		healthChecks = append(healthChecks, healthCheck)
 	}

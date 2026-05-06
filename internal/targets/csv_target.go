@@ -1,28 +1,26 @@
 package targets
 
 import (
-	"time"
-
 	"github.com/degeens/scrobblet/internal/clients/csv"
 	"github.com/degeens/scrobblet/internal/common"
 )
 
 type CSVTarget struct {
-	healthy         bool
-	lastHealthCheck time.Time
-	client          *csv.Client
+	client *csv.Client
 }
 
 func NewCSVTarget(client *csv.Client) *CSVTarget {
 	return &CSVTarget{
-		healthy:         true,
-		lastHealthCheck: time.Now().UTC(),
-		client:          client,
+		client: client,
 	}
 }
 
-func (t *CSVTarget) Healthy() (bool, time.Time) {
-	return t.healthy, t.lastHealthCheck
+func (t *CSVTarget) Healthy() bool {
+	err := t.client.ValidateAccess()
+
+	healthy := err == nil
+
+	return healthy
 }
 
 func (t *CSVTarget) TargetType() TargetType {
@@ -36,13 +34,6 @@ func (t *CSVTarget) SubmitPlayingTrack(track *common.Track) error {
 
 func (t *CSVTarget) SubmitPlayedTrack(trackedTrack *common.TrackedTrack) error {
 	err := t.client.WriteScrobble(trackedTrack)
-	if err != nil {
-		t.healthy = false
-		t.lastHealthCheck = time.Now().UTC()
-		return err
-	}
 
-	t.healthy = true
-	t.lastHealthCheck = time.Now().UTC()
-	return nil
+	return err
 }

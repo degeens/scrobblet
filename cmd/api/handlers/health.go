@@ -3,7 +3,6 @@ package handlers
 import (
 	"encoding/json"
 	"net/http"
-	"time"
 
 	"github.com/degeens/scrobblet/internal/health"
 	"github.com/degeens/scrobblet/internal/sources"
@@ -22,9 +21,8 @@ type HealthResponse struct {
 }
 
 type ClientHealth struct {
-	Type      string    `json:"type"`
-	Status    string    `json:"status"`
-	Timestamp time.Time `json:"timestamp"`
+	Type   string `json:"type"`
+	Status string `json:"status"`
 }
 
 func Health(source sources.Source, targets []targets.Target) http.HandlerFunc {
@@ -51,18 +49,16 @@ func toHealthResponse(h health.HealthCheck) HealthResponse {
 	targets := make([]ClientHealth, len(h.Targets))
 	for i, t := range h.Targets {
 		targets[i] = ClientHealth{
-			Type:      string(t.TargetType),
-			Status:    toHealthStatus(t.Healthy),
-			Timestamp: t.LastHealthCheck,
+			Type:   string(t.TargetType),
+			Status: toHealthStatus(t.Healthy),
 		}
 	}
 
 	return HealthResponse{
 		Status: toHealthStatus(h.Healthy),
 		Source: ClientHealth{
-			Type:      string(h.Source.SourceType),
-			Status:    toHealthStatus(h.Source.Healthy),
-			Timestamp: h.Source.LastHealthCheck,
+			Type:   string(h.Source.SourceType),
+			Status: toHealthStatus(h.Source.Healthy),
 		},
 		Targets: targets,
 	}

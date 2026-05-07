@@ -1,10 +1,11 @@
 # API Reference
 
-This reference covers all HTTP endpoints exposed by Scrobblet for health checking and OAuth authentication flows.
+This reference covers all HTTP endpoints exposed by Scrobblet for health checking, metrics, and OAuth authentication flows.
 
 ## Table of Contents
 - [Endpoints](#endpoints)
-  - [GET /api/health](#get-apihealth)
+  - [GET /health](#get-health)
+  - [GET /metrics](#get-metrics)
   - [GET /api/spotify/login](#get-apispotifylogin)
   - [GET /api/spotify/callback](#get-apispotifycallback)
   - [GET /api/lastfm/login](#get-apilastfmlogin)
@@ -12,7 +13,7 @@ This reference covers all HTTP endpoints exposed by Scrobblet for health checkin
 
 ## Endpoints
 
-### GET /api/health
+### GET /health
 
 Returns the health status of the source and target clients.
 
@@ -60,6 +61,25 @@ Returns the health status of the source and target clients.
 | `targets[].type` | Target type  (e.g. `LastFm`, `ListenBrainz`, `Maloja`, `Koito`, `CSV`) |
 | `targets[].status` | Target health status. Options: `healthy`, `unhealthy` |
 | `targets[].timestamp` | Time of the last target health check |
+
+
+### GET /metrics
+
+Returns process and Go Prometheus metrics.
+
+#### Response
+
+##### Status
+
+| Status | Description |
+|---|---|
+| `200 OK` | Metrics returned |
+
+##### Headers
+
+| Header | Value |
+|---|---|
+| `Content-Type` | `text/plain` |
 
 
 ### GET /api/spotify/login

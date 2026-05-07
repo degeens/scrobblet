@@ -11,28 +11,59 @@ import (
 	"github.com/degeens/scrobblet/internal/clients/spotify"
 	"github.com/degeens/scrobblet/internal/sources"
 	"github.com/degeens/scrobblet/internal/targets"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/collectors"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 func routes(source sources.Source, targets []targets.Target, sourceClient any, targetClients []any, config *config.Config, authStateStore *utils.AuthStateStore) http.Handler {
-	mux := http.NewServeMux()
+	apiMux := http.NewServeMux()
 
-	mux.HandleFunc("GET /api/health", handlers.Health(source, targets))
-
-	if spotifyClient, ok := sourceClient.(*spotify.Client); ok {
-		mux.HandleFunc("GET /api/spotify/login", handlers.SpotifyLogin(spotifyClient, authStateStore))
-		mux.HandleFunc("GET /api/spotify/callback", handlers.SpotifyCallback(spotifyClient, authStateStore))
+	spotifyClient := getSpotifyClient(sourceClient)
+	if spotifyClient != nil {
+		apiMux.HandleFunc("GET /spotify/login", handlers.SpotifyLogin(spotifyClient, authStateStore))
+		apiMux.HandleFunc("GET /spotify/callback", handlers.SpotifyCallback(spotifyClient, authStateStore))
 	}
 
+	lastfmClient := getLastFmClient(targetClients)
+	if lastfmClient != nil {
+		apiMux.HandleFunc("GET /lastfm/login", handlers.LastFmLogin(lastfmClient))
+		apiMux.HandleFunc("GET /lastfm/callback", handlers.LastFmCallback(lastfmClient))
+	}
+
+	rootMux := http.NewServeMux()
+	rootMux.Handle("GET /health", handlers.Health(source, targets))
+	rootMux.Handle("GET /metrics", promhttp.HandlerFor(newPrometheusRegistry(), promhttp.HandlerOpts{}))
+	rootMux.Handle("/api/", http.StripPrefix("/api", middleware.LogRequest(middleware.RateLimit(config.RateLimitRate, config.RateLimitBurst)(apiMux))))
+
+	return rootMux
+}
+
+func getSpotifyClient(sourceClient any) *spotify.Client {
+	spotifyClient, _ := sourceClient.(*spotify.Client)
+
+	return spotifyClient
+}
+
+func getLastFmClient(targetClients []any) *lastfm.Client {
+	var lastfmClient *lastfm.Client
 	for _, client := range targetClients {
-		if lastfmClient, ok := client.(*lastfm.Client); ok {
-			mux.HandleFunc("GET /api/lastfm/login", handlers.LastFmLogin(lastfmClient))
-			mux.HandleFunc("GET /api/lastfm/callback", handlers.LastFmCallback(lastfmClient))
+		if c, ok := client.(*lastfm.Client); ok {
+			lastfmClient = c
 			break
 		}
 	}
 
-	rate := config.RateLimitRate
-	burst := config.RateLimitBurst
+	return lastfmClient
+}
 
-	return middleware.LogRequest(middleware.RateLimit(rate, burst)(mux))
+func newPrometheusRegistry() *prometheus.Registry {
+	reg := prometheus.NewRegistry()
+
+	reg.MustRegister(
+		collectors.NewGoCollector(),
+		collectors.NewProcessCollector(collectors.ProcessCollectorOpts{}),
+	)
+
+	return reg
 }

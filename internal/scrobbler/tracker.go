@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/degeens/scrobblet/internal/common"
+	"github.com/degeens/scrobblet/internal/metrics"
 	"github.com/degeens/scrobblet/internal/sources"
 )
 
@@ -19,13 +20,15 @@ type Tracker struct {
 	source           sources.Source
 	playingTrackChan chan common.Track
 	playedTrackChan  chan<- common.TrackedTrack
+	metrics          *metrics.Metrics
 }
 
-func NewTracker(source sources.Source, playingTrackChan chan common.Track, playedTrackChan chan<- common.TrackedTrack) *Tracker {
+func NewTracker(source sources.Source, playingTrackChan chan common.Track, playedTrackChan chan<- common.TrackedTrack, metrics *metrics.Metrics) *Tracker {
 	return &Tracker{
 		source:           source,
 		playingTrackChan: playingTrackChan,
 		playedTrackChan:  playedTrackChan,
+		metrics:          metrics,
 	}
 }
 
@@ -33,11 +36,12 @@ func (t *Tracker) Start() {
 	lastActivity := time.Now().UTC()
 	pollInterval := activePollInterval
 	ticker := time.NewTicker(pollInterval)
+	t.metrics.PollingInterval.Set(pollInterval.Seconds())
 
 	var trackedTrack *common.TrackedTrack
 
 	for range ticker.C {
-		playbackState, err := t.source.GetPlaybackState()
+		playbackState, err := t.getPlaybackState()
 		if err != nil {
 			slog.Error(err.Error())
 			continue
@@ -96,6 +100,22 @@ func (t *Tracker) Start() {
 	}
 }
 
+func (t *Tracker) getPlaybackState() (*sources.PlaybackState, error) {
+	source := string(t.source.SourceType())
+
+	start := time.Now()
+	playbackState, err := t.source.GetPlaybackState()
+	t.metrics.PollDuration.WithLabelValues(source).Observe(time.Since(start).Seconds())
+
+	if err != nil {
+		t.metrics.Polls.WithLabelValues(source, metrics.StatusFailure).Inc()
+		return nil, err
+	}
+
+	t.metrics.Polls.WithLabelValues(source, metrics.StatusSuccess).Inc()
+	return playbackState, nil
+}
+
 func (t *Tracker) isTrackChange(playbackState *sources.PlaybackState, trackedTrack *common.TrackedTrack) bool {
 	return trackedTrack != nil &&
 		(playbackState == nil || !playbackState.Track.Equals(trackedTrack.Track))
@@ -121,6 +141,7 @@ func (t *Tracker) isNormalPlayback(positionDiff, timeDiff time.Duration) bool {
 func (t *Tracker) switchToInactivePollingIntervalIfNeeded(ticker *time.Ticker, currentInterval time.Duration, lastActivityTime time.Time) time.Duration {
 	if time.Since(lastActivityTime) > inactivityThreshold && currentInterval != inactivePollInterval {
 		ticker.Reset(inactivePollInterval)
+		t.metrics.PollingInterval.Set(inactivePollInterval.Seconds())
 
 		slog.Info("Switched to inactive polling interval", "interval", inactivePollInterval/time.Second)
 
@@ -133,6 +154,7 @@ func (t *Tracker) switchToInactivePollingIntervalIfNeeded(ticker *time.Ticker, c
 func (t *Tracker) switchToActivePollingIntervalIfNeeded(ticker *time.Ticker, currentInterval time.Duration) time.Duration {
 	if currentInterval != activePollInterval {
 		ticker.Reset(activePollInterval)
+		t.metrics.PollingInterval.Set(activePollInterval.Seconds())
 
 		slog.Info("Switched to active polling interval", "interval", activePollInterval/time.Second)
 

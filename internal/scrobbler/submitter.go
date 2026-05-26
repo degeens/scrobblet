@@ -37,13 +37,13 @@ func (s *Submitter) Start() {
 				s.metrics.SubmitDuration.WithLabelValues(string(target.TargetType()), metrics.KindNowPlaying).Observe(time.Since(start).Seconds())
 
 				if err != nil {
-					s.metrics.NowPlayingSubmits.WithLabelValues(string(target.TargetType()), metrics.StatusFailure).Inc()
+					s.metrics.Submits.WithLabelValues(string(target.TargetType()), metrics.KindNowPlaying, metrics.StatusFailure).Inc()
 					slog.Error("Failed to submit now playing track", append(track.SlogArgs(), "target", target.TargetType(), "error", err.Error())...)
 					continue
 					// todo: retry (with exponential backoff)
 				}
 
-				s.metrics.NowPlayingSubmits.WithLabelValues(string(target.TargetType()), metrics.StatusSuccess).Inc()
+				s.metrics.Submits.WithLabelValues(string(target.TargetType()), metrics.KindNowPlaying, metrics.StatusSuccess).Inc()
 				slog.Info("Now playing track submitted", append(track.SlogArgs(), "target", target.TargetType())...)
 			}
 		case trackedTrack := <-s.playedTrackChan:
@@ -62,13 +62,13 @@ func (s *Submitter) Start() {
 				s.metrics.SubmitDuration.WithLabelValues(string(target.TargetType()), metrics.KindScrobble).Observe(time.Since(start).Seconds())
 
 				if err != nil {
-					s.metrics.ScrobbleSubmits.WithLabelValues(string(target.TargetType()), metrics.StatusFailure).Inc()
+					s.metrics.Submits.WithLabelValues(string(target.TargetType()), metrics.KindScrobble, metrics.StatusFailure).Inc()
 					slog.Error("Failed to submit track", append(trackedTrack.Track.SlogArgs(), "target", target.TargetType(), "error", err.Error())...)
 					continue
 					// todo: retry (with exponential backoff)
 				}
 
-				s.metrics.ScrobbleSubmits.WithLabelValues(string(target.TargetType()), metrics.StatusSuccess).Inc()
+				s.metrics.Submits.WithLabelValues(string(target.TargetType()), metrics.KindScrobble, metrics.StatusSuccess).Inc()
 				slog.Info("Track submitted", append(trackedTrack.Track.SlogArgs(), "target", target.TargetType())...)
 			}
 		}

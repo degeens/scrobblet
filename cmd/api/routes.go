@@ -15,7 +15,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
-func routes(source sources.Source, targets []targets.Target, sourceClient any, targetClients []any, config *config.Config, authStateStore *utils.AuthStateStore, m *metrics.Metrics) http.Handler {
+func routes(source sources.Source, targets []targets.Target, sourceClient any, targetClients []any, config *config.Config, authStateStore *utils.AuthStateStore, metrics *metrics.Metrics) http.Handler {
 	apiMux := http.NewServeMux()
 
 	spotifyClient := getSpotifyClient(sourceClient)
@@ -32,7 +32,7 @@ func routes(source sources.Source, targets []targets.Target, sourceClient any, t
 
 	rootMux := http.NewServeMux()
 	rootMux.Handle("GET /health", handlers.Health(source, targets))
-	rootMux.Handle("GET /metrics", promhttp.HandlerFor(m.Registry, promhttp.HandlerOpts{}))
+	rootMux.Handle("GET /metrics", promhttp.HandlerFor(metrics.Registry, promhttp.HandlerOpts{}))
 	rootMux.Handle("/api/", http.StripPrefix("/api", middleware.LogRequest(middleware.RateLimit(config.RateLimitRate, config.RateLimitBurst)(apiMux))))
 
 	return rootMux

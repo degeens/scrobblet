@@ -9,14 +9,13 @@ import (
 	"github.com/degeens/scrobblet/cmd/api/utils"
 	"github.com/degeens/scrobblet/internal/clients/lastfm"
 	"github.com/degeens/scrobblet/internal/clients/spotify"
+	"github.com/degeens/scrobblet/internal/metrics"
 	"github.com/degeens/scrobblet/internal/sources"
 	"github.com/degeens/scrobblet/internal/targets"
-	"github.com/prometheus/client_golang/prometheus"
-	"github.com/prometheus/client_golang/prometheus/collectors"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
-func routes(source sources.Source, targets []targets.Target, sourceClient any, targetClients []any, config *config.Config, authStateStore *utils.AuthStateStore) http.Handler {
+func routes(source sources.Source, targets []targets.Target, sourceClient any, targetClients []any, config *config.Config, authStateStore *utils.AuthStateStore, metrics *metrics.Metrics) http.Handler {
 	apiMux := http.NewServeMux()
 
 	spotifyClient := getSpotifyClient(sourceClient)
@@ -33,7 +32,7 @@ func routes(source sources.Source, targets []targets.Target, sourceClient any, t
 
 	rootMux := http.NewServeMux()
 	rootMux.Handle("GET /health", handlers.Health(source, targets))
-	rootMux.Handle("GET /metrics", promhttp.HandlerFor(newPrometheusRegistry(), promhttp.HandlerOpts{}))
+	rootMux.Handle("GET /metrics", promhttp.HandlerFor(metrics.Registry, promhttp.HandlerOpts{}))
 	rootMux.Handle("/api/", http.StripPrefix("/api", middleware.LogRequest(middleware.RateLimit(config.RateLimitRate, config.RateLimitBurst)(apiMux))))
 
 	return rootMux
@@ -55,15 +54,4 @@ func getLastFmClient(targetClients []any) *lastfm.Client {
 	}
 
 	return lastfmClient
-}
-
-func newPrometheusRegistry() *prometheus.Registry {
-	reg := prometheus.NewRegistry()
-
-	reg.MustRegister(
-		collectors.NewGoCollector(),
-		collectors.NewProcessCollector(collectors.ProcessCollectorOpts{}),
-	)
-
-	return reg
 }

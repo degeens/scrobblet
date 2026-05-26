@@ -65,7 +65,7 @@ Returns the health status of the source and target clients.
 
 ### GET /metrics
 
-Returns process and Go Prometheus metrics.
+Returns Prometheus metrics, including application, Go runtime, and process metrics.
 
 #### Response
 
@@ -81,6 +81,19 @@ Returns process and Go Prometheus metrics.
 |---|---|
 | `Content-Type` | `text/plain` |
 
+##### Body
+
+The table below documents the application metrics:
+
+| Metric Name | Type | Help | Labels |
+|---|---|---|---|
+| `scrobblet_build_info` | GaugeVec | Build information. | `version` |
+| `scrobblet_polling_interval_seconds` | Gauge | Current polling interval (in seconds). | — |
+| `scrobblet_polls_total` | CounterVec | Total number of polls. | `source`, `status` |
+| `scrobblet_submits_total` | CounterVec | Total number of submits. | `target`, `kind`, `status` |
+| `scrobblet_scrobble_evaluations_total` | CounterVec | Total number of scrobble evaluations. | `result` |
+| `scrobblet_poll_duration_seconds` | HistogramVec | Duration (in seconds) of polls. | `source` |
+| `scrobblet_submit_duration_seconds` | HistogramVec | Duration (in seconds) of submits. | `target`, `kind` |
 
 ### GET /api/spotify/login
 
@@ -130,7 +143,7 @@ This endpoint is called automatically by Spotify after the user authorizes the a
 
 | Header | Value |
 |---|---|
-| `Content-Type` | `text/plain; charset=utf-8` |
+| `Content-Type` | `text/plain` |
 
 ##### Body
 
@@ -193,7 +206,7 @@ This endpoint is called automatically by Last.fm after the user authorizes the a
 
 | Header | Value |
 |---|---|
-| `Content-Type` | `text/plain; charset=utf-8` |
+| `Content-Type` | `text/plain` |
 
 ##### Body
 

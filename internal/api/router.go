@@ -1,22 +1,23 @@
-package main
+package api
 
 import (
 	"net/http"
 
-	"github.com/degeens/scrobblet/cmd/api/config"
-	"github.com/degeens/scrobblet/cmd/api/handlers"
-	"github.com/degeens/scrobblet/cmd/api/middleware"
-	"github.com/degeens/scrobblet/cmd/api/utils"
+	"github.com/degeens/scrobblet/internal/api/handlers"
+	"github.com/degeens/scrobblet/internal/api/middleware"
+	"github.com/degeens/scrobblet/internal/api/utils"
 	"github.com/degeens/scrobblet/internal/clients/lastfm"
 	"github.com/degeens/scrobblet/internal/clients/spotify"
+	"github.com/degeens/scrobblet/internal/config"
 	"github.com/degeens/scrobblet/internal/metrics"
 	"github.com/degeens/scrobblet/internal/sources"
 	"github.com/degeens/scrobblet/internal/targets"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
-func routes(source sources.Source, targets []targets.Target, sourceClient any, targetClients []any, config *config.Config, authStateStore *utils.AuthStateStore, metrics *metrics.Metrics) http.Handler {
+func NewHandler(source sources.Source, targets []targets.Target, sourceClient any, targetClients []any, cfg *config.Config, metrics *metrics.Metrics) http.Handler {
 	apiMux := http.NewServeMux()
+	authStateStore := utils.NewAuthStateStore()
 
 	spotifyClient := getSpotifyClient(sourceClient)
 	if spotifyClient != nil {
@@ -33,7 +34,7 @@ func routes(source sources.Source, targets []targets.Target, sourceClient any, t
 	rootMux := http.NewServeMux()
 	rootMux.Handle("GET /health", handlers.Health(source, targets))
 	rootMux.Handle("GET /metrics", promhttp.HandlerFor(metrics.Registry, promhttp.HandlerOpts{}))
-	rootMux.Handle("/api/", http.StripPrefix("/api", middleware.LogRequest(middleware.RateLimit(config.RateLimitRate, config.RateLimitBurst)(apiMux))))
+	rootMux.Handle("/api/", http.StripPrefix("/api", middleware.LogRequest(middleware.RateLimit(cfg.RateLimitRate, cfg.RateLimitBurst)(apiMux))))
 
 	return rootMux
 }

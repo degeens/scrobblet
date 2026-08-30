@@ -8,9 +8,7 @@ import (
 	"time"
 )
 
-var (
-	ErrInvalidState = errors.New("invalid or expired OAuth state")
-)
+var ErrInvalidState = errors.New("invalid or expired OAuth state")
 
 type authState struct {
 	value     string
@@ -49,7 +47,7 @@ func (m *AuthStateStore) Generate(service string) (string, error) {
 	return state, nil
 }
 
-// Checks if the state parameter is valid for the specified service and removes it
+// Checks if the state parameter is valid for the specified service and removes it.
 func (m *AuthStateStore) Validate(service, state string) error {
 	if state == "" {
 		return ErrInvalidState

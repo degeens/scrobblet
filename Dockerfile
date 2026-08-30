@@ -6,7 +6,7 @@ WORKDIR /build
 COPY go.mod go.sum ./
 RUN go mod download
 COPY . .
-RUN go build -ldflags="-X main.version=${VERSION}" -o /app ./cmd/api
+RUN go build -ldflags="-X main.version=${VERSION}" -o /app ./cmd/scrobblet
 
 FROM alpine:3.23 AS final
 COPY --from=builder /app /bin/app

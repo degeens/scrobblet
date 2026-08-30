@@ -5,7 +5,7 @@ import (
 	"log/slog"
 	"net/http"
 
-	"github.com/degeens/scrobblet/cmd/api/utils"
+	"github.com/degeens/scrobblet/internal/api/utils"
 	"github.com/degeens/scrobblet/internal/clients/spotify"
 )
 

@@ -23,6 +23,7 @@ Currently, Scrobblet supports scrobbling from **Spotify** to **Last.fm**, **List
 - **Multiple targets**: Scrobble to multiple services simultaneously
 - **Now playing support**: Broadcasts what you're currently listening to
 - **Adaptive polling**: The polling interval automatically adjusts based on your listening activity to reduce unnecessary load
+- **Observability**: Structured JSON logging, Prometheus-compatible metrics, and a health endpoint
 
 ## Installation
 

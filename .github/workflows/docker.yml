@@ -8,8 +8,13 @@ permissions:
   contents: read
 
 jobs:
+  ci:
+    name: CI
+    uses: ./.github/workflows/ci.yml
+
   push_to_registry:
     name: Push Docker image to Docker Hub
+    needs: ci
     runs-on: ubuntu-latest
     steps:
       - name: Check out the repo

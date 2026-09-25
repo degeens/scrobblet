@@ -1,6 +1,7 @@
 package sources
 
 import (
+	"strings"
 	"time"
 
 	"github.com/degeens/scrobblet/internal/clients/wiim"
@@ -45,6 +46,15 @@ func (s *WiiMSource) GetPlaybackState() (*PlaybackState, error) {
 }
 
 func wiimToPlaybackState(playerStatus *wiim.PlayerStatus) *PlaybackState {
+	const unknown = "Unknown"
+
+	// For example, WiiM reports "Unknown" metadata for optical inputs, such as TV audio, which should not be scrobbled.
+	if strings.EqualFold(playerStatus.Title, unknown) ||
+		strings.EqualFold(playerStatus.Artist, unknown) ||
+		strings.EqualFold(playerStatus.Album, unknown) {
+		return nil
+	}
+
 	return &PlaybackState{
 		Track: &common.Track{
 			Artists:  []string{playerStatus.Artist},

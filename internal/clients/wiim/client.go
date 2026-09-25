@@ -39,7 +39,11 @@ func (c *Client) GetPlayerStatus() (*PlayerStatus, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer res.Body.Close()
+	defer func() {
+		if closeErr := res.Body.Close(); closeErr != nil && err == nil {
+			err = closeErr
+		}
+	}()
 
 	body, err := io.ReadAll(res.Body)
 	if err != nil {

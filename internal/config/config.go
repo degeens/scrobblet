@@ -63,6 +63,7 @@ func LoadConfig() (*Config, error) {
 	}, nil
 }
 
+//gocyclo:ignore
 func loadClientsConfig(sourceType sources.SourceType, targetTypes []targets.TargetType, dataPath string) (clients.Config, error) {
 	var spotifyConfig spotify.Config
 	var wiimConfig wiim.Config

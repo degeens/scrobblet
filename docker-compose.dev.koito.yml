@@ -32,26 +32,9 @@ services:
     volumes:
       - koito-data:/etc/koito
     ports:
-      - "4110:4110"
-    environment:
-      - KOITO_DATABASE_URL=postgres://koito:password@postgres:5432/koito
-      - KOITO_ALLOWED_HOSTS=koito:4110,localhost:4110
-    depends_on:
-      - postgres
-    restart: unless-stopped
-
-  postgres:
-    image: postgres:16
-    container_name: postgres
-    volumes:
-      - postgres-data:/var/lib/postgresql/data
-    environment:
-      POSTGRES_DB: koito
-      POSTGRES_USER: koito
-      POSTGRES_PASSWORD: password
+      - 4110:4110
     restart: unless-stopped
 
 volumes:
   scrobblet-data:
   koito-data:
-  postgres-data:

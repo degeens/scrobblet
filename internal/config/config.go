@@ -6,6 +6,7 @@ import (
 	"github.com/degeens/scrobblet/internal/clients/lastfm"
 	"github.com/degeens/scrobblet/internal/clients/listenbrainz"
 	"github.com/degeens/scrobblet/internal/clients/spotify"
+	"github.com/degeens/scrobblet/internal/clients/wiim"
 	"github.com/degeens/scrobblet/internal/sources"
 	"github.com/degeens/scrobblet/internal/targets"
 )
@@ -62,8 +63,10 @@ func LoadConfig() (*Config, error) {
 	}, nil
 }
 
+//gocyclo:ignore
 func loadClientsConfig(sourceType sources.SourceType, targetTypes []targets.TargetType, dataPath string) (clients.Config, error) {
 	var spotifyConfig spotify.Config
+	var wiimConfig wiim.Config
 	var koitoConfig listenbrainz.Config
 	var malojaConfig listenbrainz.Config
 	var listenBrainzConfig listenbrainz.Config
@@ -73,6 +76,12 @@ func loadClientsConfig(sourceType sources.SourceType, targetTypes []targets.Targ
 
 	if sourceType == sources.SourceSpotify {
 		spotifyConfig, err = loadSpotifyConfig(dataPath)
+		if err != nil {
+			return clients.Config{}, err
+		}
+	}
+	if sourceType == sources.SourceWiiM {
+		wiimConfig, err = loadWiiMConfig()
 		if err != nil {
 			return clients.Config{}, err
 		}
@@ -110,6 +119,7 @@ func loadClientsConfig(sourceType sources.SourceType, targetTypes []targets.Targ
 
 	return clients.Config{
 		Spotify:      spotifyConfig,
+		WiiM:         wiimConfig,
 		Koito:        koitoConfig,
 		Maloja:       malojaConfig,
 		ListenBrainz: listenBrainzConfig,
@@ -145,6 +155,14 @@ func loadSpotifyConfig(dataPath string) (spotify.Config, error) {
 		RedirectURL:  redirectURL,
 		DataPath:     dataPath,
 	}, nil
+}
+
+func loadWiiMConfig() (wiim.Config, error) {
+	baseURL, err := getRequiredEnv(envWiiMURL)
+	if err != nil {
+		return wiim.Config{}, err
+	}
+	return wiim.Config{BaseURL: baseURL}, nil
 }
 
 func loadListenBrainzConfig(targetType targets.TargetType) (listenbrainz.Config, error) {

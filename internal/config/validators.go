@@ -10,11 +10,19 @@ import (
 )
 
 func validateSource(source string) (sources.SourceType, error) {
-	switch strings.ToLower(strings.TrimSpace(source)) {
+	source = strings.TrimSpace(source)
+
+	if strings.Contains(source, ",") {
+		return "", fmt.Errorf("only one source is allowed")
+	}
+
+	switch strings.ToLower(source) {
 	case strings.ToLower(string(sources.SourceSpotify)):
 		return sources.SourceSpotify, nil
+	case strings.ToLower(string(sources.SourceWiiM)):
+		return sources.SourceWiiM, nil
 	default:
-		return "", fmt.Errorf("invalid source: %s. Valid sources are: %s", source, sources.SourceSpotify)
+		return "", fmt.Errorf("invalid source: %s. Valid sources are: %s, %s", source, sources.SourceSpotify, sources.SourceWiiM)
 	}
 }
 

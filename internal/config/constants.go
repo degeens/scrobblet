@@ -21,6 +21,7 @@ const (
 	envSpotifyClientID     = "SPOTIFY_CLIENT_ID"
 	envSpotifyClientSecret = "SPOTIFY_CLIENT_SECRET"
 	envSpotifyRedirectURL  = "SPOTIFY_REDIRECT_URL"
+	envWiiMURL             = "WIIM_URL"
 	envKoitoURL            = "KOITO_URL"
 	envKoitoToken          = "KOITO_TOKEN"
 	envMalojaURL           = "MALOJA_URL"

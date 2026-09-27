@@ -4,9 +4,10 @@ This guide covers all available Scrobblet configuration options, which are set t
 
 ## Table of Contents
 - [General Configuration](#general-configuration)
-- [Client Configuration](#client-configuration)
+- [Source Configuration](#source-configuration)
   - [Spotify](#spotify)
   - [WiiM](#wiim)
+- [Target Configuration](#target-configuration)
   - [Last.fm](#lastfm)
   - [ListenBrainz](#listenbrainz)
   - [Maloja](#maloja)
@@ -25,7 +26,7 @@ This guide covers all available Scrobblet configuration options, which are set t
 | `SCROBBLET_SOURCE` | Yes | - | Source to track. Options: `Spotify`, `WiiM` |
 | `SCROBBLET_TARGETS` | Yes | - | Comma-separated list of targets to scrobble to. Options: `LastFm`, `ListenBrainz`, `Maloja`, `Koito`, `CSV` |
 
-## Client Configuration
+## Source Configuration
 
 ### Spotify
 
@@ -70,6 +71,8 @@ To set up WiiM:
 4. Start Scrobblet with `WIIM_URL` set to `https://` + the copied IP address (e.g., `https://192.168.0.100`)
 
 > **ℹ️ Static IP recommended**: Since Scrobblet connects to your WiiM device using its IP address, it is recommended to configure a static IP for your WiiM device in the WiiM Home app so the address doesn't change over time.
+
+## Target Configuration
 
 ### Last.fm
 

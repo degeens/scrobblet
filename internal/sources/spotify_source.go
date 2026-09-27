@@ -37,14 +37,14 @@ func (s *SpotifySource) GetPlaybackState() (*PlaybackState, error) {
 		return nil, err
 	}
 
-	playbackState := toPlaybackState(currentlyPlaying)
+	playbackState := spotifyToPlaybackState(currentlyPlaying)
 
 	s.healthy = true
 	s.lastHealthCheck = time.Now().UTC()
 	return playbackState, nil
 }
 
-func toPlaybackState(currentlyPlaying *spotify.CurrentlyPlayingTrack) *PlaybackState {
+func spotifyToPlaybackState(currentlyPlaying *spotify.CurrentlyPlayingTrack) *PlaybackState {
 	if currentlyPlaying == nil {
 		return nil
 	}

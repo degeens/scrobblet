@@ -12,7 +12,7 @@
 
 Scrobblet is a lightweight scrobbler for self-hosters. It tracks your listening activity from a music source and scrobbles it to your preferred targets, and is easy to extend with new integrations.
 
-Currently, Scrobblet supports scrobbling from **Spotify** to **Last.fm**, **ListenBrainz** (including any ListenBrainz-compatible service), **Maloja**, **Koito**, and **CSV**.
+Currently, Scrobblet supports scrobbling from **Spotify** and **WiiM** to **Last.fm**, **ListenBrainz** (including any ListenBrainz-compatible service), **Maloja**, **Koito**, and **CSV**.
 
 > **⚠️ Warning**: This project is in early stages of development. Features and APIs may change without notice.
 

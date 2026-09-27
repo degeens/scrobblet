@@ -6,6 +6,7 @@ This guide covers all available Scrobblet configuration options, which are set t
 - [General Configuration](#general-configuration)
 - [Client Configuration](#client-configuration)
   - [Spotify](#spotify)
+  - [WiiM](#wiim)
   - [Last.fm](#lastfm)
   - [ListenBrainz](#listenbrainz)
   - [Maloja](#maloja)
@@ -21,7 +22,7 @@ This guide covers all available Scrobblet configuration options, which are set t
 | `SCROBBLET_LOG_LEVEL` | No | `INFO` | The log level. Options: `DEBUG`, `INFO`, `WARN`, `ERROR` |
 | `SCROBBLET_RATE_LIMIT_RATE` | No | `10` | Maximum requests per second |
 | `SCROBBLET_RATE_LIMIT_BURST` | No | `100`| Maximum burst size |
-| `SCROBBLET_SOURCE` | Yes | - | Source to track. Options: `Spotify` |
+| `SCROBBLET_SOURCE` | Yes | - | Source to track. Options: `Spotify`, `WiiM` |
 | `SCROBBLET_TARGETS` | Yes | - | Comma-separated list of targets to scrobble to. Options: `LastFm`, `ListenBrainz`, `Maloja`, `Koito`, `CSV` |
 
 ## Client Configuration
@@ -53,6 +54,22 @@ To set up Spotify:
 > 2. Set the Spotify Redirect URI and `SPOTIFY_REDIRECT_URL` to `http://127.0.0.1:8080/api/spotify/callback`
 > 3. Visit `http://localhost:7276/api/spotify/login` to authenticate
 > 4. Replace `127.0.0.1:8080` with the address of your Scrobblet instance and open the updated URL
+
+### WiiM
+
+| Variable | Required | Default | Description |
+|----------|----------|---------|-------------|
+| `WIIM_URL` | Yes* | - | Your WiiM device URL (e.g., `https://192.168.0.100`). Must be a local IP address |
+
+*Required only when `SCROBBLET_SOURCE=WiiM`*
+
+To set up WiiM:
+1. Open the WiiM Home mobile app
+2. Open the settings for your WiiM device
+3. Go to General → Network and copy the IP address
+4. Start Scrobblet with `WIIM_URL` set to `https://` + the copied IP address (e.g., `https://192.168.0.100`)
+
+> **ℹ️ Static IP recommended**: Since Scrobblet connects to your WiiM device using its IP address, it is recommended to configure a static IP for your WiiM device in the WiiM Home app so the address doesn't change over time.
 
 ### Last.fm
 

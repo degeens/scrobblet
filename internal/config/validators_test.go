@@ -16,13 +16,13 @@ func TestValidateSource(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name:    "valid lowercase",
+			name:    "valid spotify lowercase",
 			source:  "spotify",
 			want:    sources.SourceSpotify,
 			wantErr: false,
 		},
 		{
-			name:    "valid titlecase",
+			name:    "valid spotify titlecase",
 			source:  "Spotify",
 			want:    sources.SourceSpotify,
 			wantErr: false,
@@ -32,6 +32,24 @@ func TestValidateSource(t *testing.T) {
 			source:  " Spotify ",
 			want:    sources.SourceSpotify,
 			wantErr: false,
+		},
+		{
+			name:    "valid wiim lowercase",
+			source:  "wiim",
+			want:    sources.SourceWiiM,
+			wantErr: false,
+		},
+		{
+			name:    "valid wiim mixed case",
+			source:  "WiiM",
+			want:    sources.SourceWiiM,
+			wantErr: false,
+		},
+		{
+			name:    "multiple sources return error",
+			source:  "Spotify,WiiM",
+			want:    "",
+			wantErr: true,
 		},
 		{
 			name:    "unknown returns error",
@@ -204,6 +222,82 @@ func TestValidateRedirectURL(t *testing.T) {
 			}
 			if tt.wantErr && err.Error() != tt.wantErrText {
 				t.Errorf("validateRedirectURL(%q, %q) errText = %q, wantErrText %q", tt.url, tt.validPath, err.Error(), tt.wantErrText)
+			}
+		})
+	}
+}
+
+func TestValidateWiiMURL(t *testing.T) {
+	tests := []struct {
+		name        string
+		url         string
+		wantErr     bool
+		wantErrText string
+	}{
+		{
+			name:        "valid 192.168.x range",
+			url:         "https://192.168.0.100",
+			wantErr:     false,
+			wantErrText: "",
+		},
+		{
+			name:        "valid 192.168.x range with port",
+			url:         "https://192.168.0.100:8443",
+			wantErr:     false,
+			wantErrText: "",
+		},
+		{
+			name:        "valid 10.x range",
+			url:         "http://10.0.0.5",
+			wantErr:     false,
+			wantErrText: "",
+		},
+		{
+			name:        "valid 172.16.x range",
+			url:         "http://172.16.5.4",
+			wantErr:     false,
+			wantErrText: "",
+		},
+		{
+			name:        "public IP",
+			url:         "https://8.8.8.8",
+			wantErr:     true,
+			wantErrText: "invalid URL host: \"8.8.8.8\". Host must be a local network IP address",
+		},
+		{
+			name:        "hostname",
+			url:         "https://wiim.local",
+			wantErr:     true,
+			wantErrText: "invalid URL host: \"wiim.local\". Host must be an IP address",
+		},
+		{
+			name:        "invalid scheme",
+			url:         "ftp://192.168.0.100",
+			wantErr:     true,
+			wantErrText: "invalid URL scheme: \"ftp\". Scheme must be http or https",
+		},
+		{
+			name:        "empty url",
+			url:         "",
+			wantErr:     true,
+			wantErrText: "invalid URL scheme: \"\". Scheme must be http or https",
+		},
+		{
+			name:        "missing scheme",
+			url:         "192.168.0.100",
+			wantErr:     true,
+			wantErrText: "invalid URL scheme: \"\". Scheme must be http or https",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := validateWiiMURL(tt.url)
+			if (err != nil) != tt.wantErr {
+				t.Fatalf("validateWiiMURL(%q) err = %v, wantErr %v", tt.url, err != nil, tt.wantErr)
+			}
+			if tt.wantErr && err.Error() != tt.wantErrText {
+				t.Errorf("validateWiiMURL(%q) errText = %q, wantErrText %q", tt.url, err.Error(), tt.wantErrText)
 			}
 		})
 	}

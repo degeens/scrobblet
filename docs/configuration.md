@@ -59,9 +59,15 @@ To set up Spotify:
 
 | Variable | Required | Default | Description |
 |----------|----------|---------|-------------|
-| `WIIM_URL` | Yes* | - | Base URL of your WiiM device (e.g., `https://192.168.1.100`) |
+| `WIIM_URL` | Yes* | - | Your WiiM device URL (e.g., `https://192.168.0.100`) |
 
 *Required only when `SCROBBLET_SOURCE=WiiM`*
+
+To set up WiiM:
+1. Open the WiiM Home mobile app
+2. Open the settings for your WiiM device
+3. Go to General → Network and copy the IP address
+4. Start Scrobblet with `WIIM_URL` set to `https://` + the copied IP address (e.g., `https://192.168.0.100`)
 
 ### Last.fm
 

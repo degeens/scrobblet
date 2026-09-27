@@ -69,6 +69,8 @@ To set up WiiM:
 3. Go to General → Network and copy the IP address
 4. Start Scrobblet with `WIIM_URL` set to `https://` + the copied IP address (e.g., `https://192.168.0.100`)
 
+> **ℹ️ Static IP recommended**: Since Scrobblet connects to your WiiM device using its IP address, it is recommended to configure a static IP for your WiiM device in the WiiM Home app so the address doesn't change over time.
+
 ### Last.fm
 
 | Variable | Required | Default | Description |

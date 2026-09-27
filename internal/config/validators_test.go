@@ -16,13 +16,13 @@ func TestValidateSource(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name:    "valid lowercase",
+			name:    "valid spotify lowercase",
 			source:  "spotify",
 			want:    sources.SourceSpotify,
 			wantErr: false,
 		},
 		{
-			name:    "valid titlecase",
+			name:    "valid spotify titlecase",
 			source:  "Spotify",
 			want:    sources.SourceSpotify,
 			wantErr: false,
@@ -32,6 +32,24 @@ func TestValidateSource(t *testing.T) {
 			source:  " Spotify ",
 			want:    sources.SourceSpotify,
 			wantErr: false,
+		},
+		{
+			name:    "valid wiim lowercase",
+			source:  "wiim",
+			want:    sources.SourceWiiM,
+			wantErr: false,
+		},
+		{
+			name:    "valid wiim mixed case",
+			source:  "WiiM",
+			want:    sources.SourceWiiM,
+			wantErr: false,
+		},
+		{
+			name:    "multiple sources return error",
+			source:  "Spotify,WiiM",
+			want:    "",
+			wantErr: true,
 		},
 		{
 			name:    "unknown returns error",

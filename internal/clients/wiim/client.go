@@ -16,6 +16,10 @@ type Client struct {
 }
 
 func NewClient(baseURL string) *Client {
+	// WiiM devices ship with a self-signed certificate, so TLS verification
+	// will always fail. This is acceptable because the client only talks to
+	// devices on the local network and the traffic carries only non-sensitive
+	// data (playback state).
 	transport := http.DefaultTransport.(*http.Transport).Clone()
 	transport.TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 

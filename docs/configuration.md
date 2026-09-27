@@ -59,7 +59,7 @@ To set up Spotify:
 
 | Variable | Required | Default | Description |
 |----------|----------|---------|-------------|
-| `WIIM_URL` | Yes* | - | Your WiiM device URL (e.g., `https://192.168.0.100`) |
+| `WIIM_URL` | Yes* | - | Your WiiM device URL (e.g., `https://192.168.0.100`). Must be a local IP address |
 
 *Required only when `SCROBBLET_SOURCE=WiiM`*
 

@@ -162,6 +162,12 @@ func loadWiiMConfig() (wiim.Config, error) {
 	if err != nil {
 		return wiim.Config{}, err
 	}
+
+	err = validateWiiMURL(baseURL)
+	if err != nil {
+		return wiim.Config{}, err
+	}
+
 	return wiim.Config{BaseURL: baseURL}, nil
 }
 

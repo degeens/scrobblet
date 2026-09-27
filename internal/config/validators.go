@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"net/netip"
 	"net/url"
 	"strings"
 
@@ -81,6 +82,31 @@ func validateRedirectURL(redirectURL, validPath string) error {
 
 	if parsedURL.Path != validPath {
 		return fmt.Errorf("invalid URL path: %q. Path must be %q", parsedURL.Path, validPath)
+	}
+
+	return nil
+}
+
+// The WiiM client skips TLS certificate verification, so it must only ever
+// connect to devices on the local network.
+func validateWiiMURL(rawURL string) error {
+	parsedURL, err := url.Parse(rawURL)
+	if err != nil {
+		return fmt.Errorf("invalid URL: %w", err)
+	}
+
+	if parsedURL.Scheme != "http" && parsedURL.Scheme != "https" {
+		return fmt.Errorf("invalid URL scheme: %q. Scheme must be http or https", parsedURL.Scheme)
+	}
+
+	host := parsedURL.Hostname()
+	addr, err := netip.ParseAddr(host)
+	if err != nil {
+		return fmt.Errorf("invalid URL host: %q. Host must be an IP address", host)
+	}
+
+	if !addr.IsPrivate() {
+		return fmt.Errorf("invalid URL host: %q. Host must be a local network IP address", host)
 	}
 
 	return nil

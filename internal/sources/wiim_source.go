@@ -9,21 +9,19 @@ import (
 )
 
 type WiiMSource struct {
-	healthy         bool
-	lastHealthCheck time.Time
-	client          *wiim.Client
+	health *common.HealthStatus
+	client *wiim.Client
 }
 
 func NewWiiMSource(client *wiim.Client) *WiiMSource {
 	return &WiiMSource{
-		healthy:         true,
-		lastHealthCheck: time.Now().UTC(),
-		client:          client,
+		health: common.NewHealthStatus(),
+		client: client,
 	}
 }
 
 func (s *WiiMSource) Healthy() (bool, time.Time) {
-	return s.healthy, s.lastHealthCheck
+	return s.health.Get()
 }
 
 func (s *WiiMSource) SourceType() SourceType {
@@ -33,15 +31,13 @@ func (s *WiiMSource) SourceType() SourceType {
 func (s *WiiMSource) GetPlaybackState() (*PlaybackState, error) {
 	playerStatus, err := s.client.GetPlayerStatus()
 	if err != nil {
-		s.healthy = false
-		s.lastHealthCheck = time.Now().UTC()
+		s.health.Set(false)
 		return nil, err
 	}
 
 	playbackState := wiimToPlaybackState(playerStatus)
 
-	s.healthy = true
-	s.lastHealthCheck = time.Now().UTC()
+	s.health.Set(true)
 	return playbackState, nil
 }
 

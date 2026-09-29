@@ -8,21 +8,19 @@ import (
 )
 
 type LastFmTarget struct {
-	healthy         bool
-	lastHealthCheck time.Time
-	client          *lastfm.Client
+	health *common.HealthStatus
+	client *lastfm.Client
 }
 
 func NewLastFmTarget(client *lastfm.Client) *LastFmTarget {
 	return &LastFmTarget{
-		healthy:         true,
-		lastHealthCheck: time.Now().UTC(),
-		client:          client,
+		health: common.NewHealthStatus(),
+		client: client,
 	}
 }
 
 func (t *LastFmTarget) Healthy() (bool, time.Time) {
-	return t.healthy, t.lastHealthCheck
+	return t.health.Get()
 }
 
 func (t *LastFmTarget) TargetType() TargetType {
@@ -34,13 +32,11 @@ func (t *LastFmTarget) SubmitPlayingTrack(track *common.Track) error {
 
 	err := t.client.UpdateNowPlaying(req)
 	if err != nil {
-		t.healthy = false
-		t.lastHealthCheck = time.Now().UTC()
+		t.health.Set(false)
 		return err
 	}
 
-	t.healthy = true
-	t.lastHealthCheck = time.Now().UTC()
+	t.health.Set(true)
 	return nil
 }
 
@@ -49,13 +45,11 @@ func (t *LastFmTarget) SubmitPlayedTrack(trackedTrack *common.TrackedTrack) erro
 
 	err := t.client.Scrobble([]lastfm.ScrobbleRequest{req})
 	if err != nil {
-		t.healthy = false
-		t.lastHealthCheck = time.Now().UTC()
+		t.health.Set(false)
 		return err
 	}
 
-	t.healthy = true
-	t.lastHealthCheck = time.Now().UTC()
+	t.health.Set(true)
 	return nil
 }
 

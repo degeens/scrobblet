@@ -8,21 +8,19 @@ import (
 )
 
 type SpotifySource struct {
-	healthy         bool
-	lastHealthCheck time.Time
-	client          *spotify.Client
+	health *common.HealthStatus
+	client *spotify.Client
 }
 
 func NewSpotifySource(client *spotify.Client) *SpotifySource {
 	return &SpotifySource{
-		healthy:         true,
-		lastHealthCheck: time.Now().UTC(),
-		client:          client,
+		health: common.NewHealthStatus(),
+		client: client,
 	}
 }
 
 func (s *SpotifySource) Healthy() (bool, time.Time) {
-	return s.healthy, s.lastHealthCheck
+	return s.health.Get()
 }
 
 func (s *SpotifySource) SourceType() SourceType {
@@ -32,15 +30,13 @@ func (s *SpotifySource) SourceType() SourceType {
 func (s *SpotifySource) GetPlaybackState() (*PlaybackState, error) {
 	currentlyPlaying, err := s.client.GetCurrentlyPlayingTrack()
 	if err != nil {
-		s.healthy = false
-		s.lastHealthCheck = time.Now().UTC()
+		s.health.Set(false)
 		return nil, err
 	}
 
 	playbackState := spotifyToPlaybackState(currentlyPlaying)
 
-	s.healthy = true
-	s.lastHealthCheck = time.Now().UTC()
+	s.health.Set(true)
 	return playbackState, nil
 }
 

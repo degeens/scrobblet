@@ -49,7 +49,7 @@ jobs:
         run: go mod download
 
       - name: Run tests
-        run: go test ./...
+        run: go test -race ./...
 
   lint:
     name: Lint

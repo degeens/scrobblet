@@ -9,18 +9,24 @@ import (
 
 type CSVTarget struct {
 	health *common.HealthStatus
+	name   string
 	client *csv.Client
 }
 
-func NewCSVTarget(client *csv.Client) *CSVTarget {
+func NewCSVTarget(name string, client *csv.Client) *CSVTarget {
 	return &CSVTarget{
 		health: common.NewHealthStatus(),
+		name:   name,
 		client: client,
 	}
 }
 
 func (t *CSVTarget) Healthy() (bool, time.Time) {
 	return t.health.Get()
+}
+
+func (t *CSVTarget) Name() string {
+	return t.name
 }
 
 func (t *CSVTarget) TargetType() TargetType {

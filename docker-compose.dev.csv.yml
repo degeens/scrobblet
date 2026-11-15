@@ -4,6 +4,9 @@
 # This configuration builds Scrobblet locally and uses CSV as the scrobbling target.
 # Scrobbles are written to /etc/scrobblet/scrobbles.csv by default.
 
+# Scrobblet is configured via ./scrobblet.yaml (mounted read-only); secrets
+# referenced with ${...} in that file come from .env.
+
 # Access Scrobblet at http://localhost:7276
 
 services:
@@ -14,11 +17,9 @@ services:
       dockerfile: Dockerfile
     volumes:
       - scrobblet-data:/etc/scrobblet
+      - ./scrobblet.yaml:/etc/scrobblet/scrobblet.yaml:ro
     ports:
       - 7276:7276
-    environment:
-      - SCROBBLET_SOURCE=Spotify
-      - SCROBBLET_TARGETS=CSV
     env_file:
       - .env
     restart: unless-stopped

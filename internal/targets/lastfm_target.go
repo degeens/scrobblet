@@ -9,18 +9,24 @@ import (
 
 type LastFmTarget struct {
 	health *common.HealthStatus
+	name   string
 	client *lastfm.Client
 }
 
-func NewLastFmTarget(client *lastfm.Client) *LastFmTarget {
+func NewLastFmTarget(name string, client *lastfm.Client) *LastFmTarget {
 	return &LastFmTarget{
 		health: common.NewHealthStatus(),
+		name:   name,
 		client: client,
 	}
 }
 
 func (t *LastFmTarget) Healthy() (bool, time.Time) {
 	return t.health.Get()
+}
+
+func (t *LastFmTarget) Name() string {
+	return t.name
 }
 
 func (t *LastFmTarget) TargetType() TargetType {

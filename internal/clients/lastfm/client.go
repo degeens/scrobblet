@@ -17,6 +17,10 @@ import (
 
 const (
 	baseURL = "https://ws.audioscrobbler.com/2.0/"
+
+	// DefaultInstanceName is the instance name a Last.fm target gets when no
+	// explicit name is configured.
+	DefaultInstanceName = "lastfm"
 )
 
 type Client struct {
@@ -30,7 +34,7 @@ type Client struct {
 	sessionPath  string
 }
 
-func NewClient(apiKey, sharedSecret, redirectURL, dataPath, scrobbletVersion string) (*Client, error) {
+func NewClient(name, apiKey, sharedSecret, redirectURL, dataPath, scrobbletVersion string) (*Client, error) {
 	c := &Client{
 		baseURL:      baseURL,
 		userAgent:    fmt.Sprintf("Scrobblet/%s", scrobbletVersion),
@@ -40,7 +44,11 @@ func NewClient(apiKey, sharedSecret, redirectURL, dataPath, scrobbletVersion str
 		redirectURL:  redirectURL,
 	}
 
-	c.sessionPath = filepath.Join(dataPath, "lastfm_session.json")
+	sessionFileName := "lastfm_session.json"
+	if name != DefaultInstanceName {
+		sessionFileName = fmt.Sprintf("lastfm_session_%s.json", name)
+	}
+	c.sessionPath = filepath.Join(dataPath, sessionFileName)
 
 	err := c.loadSessionKey()
 	if err != nil {

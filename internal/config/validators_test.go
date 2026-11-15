@@ -1,14 +1,13 @@
 package config
 
 import (
-	"reflect"
 	"testing"
 
 	"github.com/degeens/scrobblet/internal/sources"
 	"github.com/degeens/scrobblet/internal/targets"
 )
 
-func TestValidateSource(t *testing.T) {
+func TestValidateSourceType(t *testing.T) {
 	tests := []struct {
 		name    string
 		source  string
@@ -46,12 +45,6 @@ func TestValidateSource(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name:    "multiple sources return error",
-			source:  "Spotify,WiiM",
-			want:    "",
-			wantErr: true,
-		},
-		{
 			name:    "unknown returns error",
 			source:  "unknown",
 			want:    "",
@@ -67,82 +60,103 @@ func TestValidateSource(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := validateSource(tt.source)
+			got, err := validateSourceType(tt.source)
 			if (err != nil) != tt.wantErr {
-				t.Fatalf("validateSource(%q) err = %v, wantErr %v", tt.source, err != nil, tt.wantErr)
+				t.Fatalf("validateSourceType(%q) err = %v, wantErr %v", tt.source, err != nil, tt.wantErr)
 			}
 			if got != tt.want {
-				t.Errorf("validateSource(%q) = %q, want %q", tt.source, got, tt.want)
+				t.Errorf("validateSourceType(%q) = %q, want %q", tt.source, got, tt.want)
 			}
 		})
 	}
 }
 
-func TestValidateTargets(t *testing.T) {
+func TestValidateTargetType(t *testing.T) {
 	tests := []struct {
 		name    string
-		targets string
-		want    []targets.TargetType
+		target  string
+		want    targets.TargetType
 		wantErr bool
 	}{
 		{
-			name:    "single valid lowercase",
-			targets: "koito",
-			want:    []targets.TargetType{targets.TargetKoito},
+			name:    "valid koito lowercase",
+			target:  "koito",
+			want:    targets.TargetKoito,
 			wantErr: false,
 		},
 		{
-			name:    "multiple valid lowercase",
-			targets: "koito,csv",
-			want:    []targets.TargetType{targets.TargetKoito, targets.TargetCSV},
+			name:    "valid csv titlecase",
+			target:  "CSV",
+			want:    targets.TargetCSV,
 			wantErr: false,
 		},
 		{
-			name:    "multiple valid titlecase",
-			targets: "Koito,CSV",
-			want:    []targets.TargetType{targets.TargetKoito, targets.TargetCSV},
+			name:    "valid with surrounding spaces",
+			target:  " ListenBrainz ",
+			want:    targets.TargetListenBrainz,
 			wantErr: false,
 		},
 		{
-			name:    "multiple valid with surrounding spaces",
-			targets: " Koito , CSV ",
-			want:    []targets.TargetType{targets.TargetKoito, targets.TargetCSV},
+			name:    "valid maloja",
+			target:  "Maloja",
+			want:    targets.TargetMaloja,
+			wantErr: false,
+		},
+		{
+			name:    "valid lastfm",
+			target:  "LastFm",
+			want:    targets.TargetLastFm,
 			wantErr: false,
 		},
 		{
 			name:    "unknown returns error",
-			targets: "unknown",
-			want:    nil,
-			wantErr: true,
-		},
-		{
-			name:    "unknown among valid returns error",
-			targets: "Koito,CSV,unknown",
-			want:    nil,
-			wantErr: true,
-		},
-		{
-			name:    "duplicate returns error",
-			targets: "Koito,Koito",
-			want:    nil,
+			target:  "unknown",
+			want:    "",
 			wantErr: true,
 		},
 		{
 			name:    "empty string returns error",
-			targets: "",
-			want:    nil,
+			target:  "",
+			want:    "",
 			wantErr: true,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := validateTargets(tt.targets)
+			got, err := validateTargetType(tt.target)
 			if (err != nil) != tt.wantErr {
-				t.Fatalf("validateTargets(%q) err = %v, wantErr %v", tt.targets, err != nil, tt.wantErr)
+				t.Fatalf("validateTargetType(%q) err = %v, wantErr %v", tt.target, err != nil, tt.wantErr)
 			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("validateTargets(%q) = %v, want %v", tt.targets, got, tt.want)
+			if got != tt.want {
+				t.Errorf("validateTargetType(%q) = %q, want %q", tt.target, got, tt.want)
+			}
+		})
+	}
+}
+
+func TestValidateTargetName(t *testing.T) {
+	tests := []struct {
+		name       string
+		targetName string
+		wantErr    bool
+	}{
+		{name: "single letter", targetName: "a", wantErr: false},
+		{name: "single digit", targetName: "1", wantErr: false},
+		{name: "lowercase with digits", targetName: "work2", wantErr: false},
+		{name: "with dashes", targetName: "second-account", wantErr: false},
+		{name: "uppercase rejected", targetName: "Work", wantErr: true},
+		{name: "leading dash rejected", targetName: "-work", wantErr: true},
+		{name: "underscore rejected", targetName: "second_account", wantErr: true},
+		{name: "space rejected", targetName: "second account", wantErr: true},
+		{name: "empty rejected", targetName: "", wantErr: true},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := validateTargetName(tt.targetName)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("validateTargetName(%q) err = %v, wantErr %v", tt.targetName, err != nil, tt.wantErr)
 			}
 		})
 	}

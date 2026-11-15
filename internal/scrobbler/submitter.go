@@ -34,17 +34,17 @@ func (s *Submitter) Start() {
 			for _, target := range s.targets {
 				start := time.Now()
 				err := target.SubmitPlayingTrack(&track)
-				s.metrics.SubmitDuration.WithLabelValues(string(target.TargetType()), metrics.KindNowPlaying).Observe(time.Since(start).Seconds())
+				s.metrics.SubmitDuration.WithLabelValues(string(target.TargetType()), target.Name(), metrics.KindNowPlaying).Observe(time.Since(start).Seconds())
 
 				if err != nil {
-					s.metrics.Submits.WithLabelValues(string(target.TargetType()), metrics.KindNowPlaying, metrics.StatusFailure).Inc()
-					slog.Error("Failed to submit now playing track", append(track.SlogArgs(), "target", target.TargetType(), "error", err.Error())...)
+					s.metrics.Submits.WithLabelValues(string(target.TargetType()), target.Name(), metrics.KindNowPlaying, metrics.StatusFailure).Inc()
+					slog.Error("Failed to submit now playing track", append(track.SlogArgs(), "target", target.TargetType(), "instance", target.Name(), "error", err.Error())...)
 					continue
 					// todo: retry (with exponential backoff)
 				}
 
-				s.metrics.Submits.WithLabelValues(string(target.TargetType()), metrics.KindNowPlaying, metrics.StatusSuccess).Inc()
-				slog.Info("Now playing track submitted", append(track.SlogArgs(), "target", target.TargetType())...)
+				s.metrics.Submits.WithLabelValues(string(target.TargetType()), target.Name(), metrics.KindNowPlaying, metrics.StatusSuccess).Inc()
+				slog.Info("Now playing track submitted", append(track.SlogArgs(), "target", target.TargetType(), "instance", target.Name())...)
 			}
 		case trackedTrack := <-s.playedTrackChan:
 			if !ShouldScrobble(trackedTrack.Duration, trackedTrack.Track.Duration) {
@@ -59,17 +59,17 @@ func (s *Submitter) Start() {
 			for _, target := range s.targets {
 				start := time.Now()
 				err := target.SubmitPlayedTrack(&trackedTrack)
-				s.metrics.SubmitDuration.WithLabelValues(string(target.TargetType()), metrics.KindScrobble).Observe(time.Since(start).Seconds())
+				s.metrics.SubmitDuration.WithLabelValues(string(target.TargetType()), target.Name(), metrics.KindScrobble).Observe(time.Since(start).Seconds())
 
 				if err != nil {
-					s.metrics.Submits.WithLabelValues(string(target.TargetType()), metrics.KindScrobble, metrics.StatusFailure).Inc()
-					slog.Error("Failed to submit track", append(trackedTrack.Track.SlogArgs(), "target", target.TargetType(), "error", err.Error())...)
+					s.metrics.Submits.WithLabelValues(string(target.TargetType()), target.Name(), metrics.KindScrobble, metrics.StatusFailure).Inc()
+					slog.Error("Failed to submit track", append(trackedTrack.Track.SlogArgs(), "target", target.TargetType(), "instance", target.Name(), "error", err.Error())...)
 					continue
 					// todo: retry (with exponential backoff)
 				}
 
-				s.metrics.Submits.WithLabelValues(string(target.TargetType()), metrics.KindScrobble, metrics.StatusSuccess).Inc()
-				slog.Info("Track submitted", append(trackedTrack.Track.SlogArgs(), "target", target.TargetType())...)
+				s.metrics.Submits.WithLabelValues(string(target.TargetType()), target.Name(), metrics.KindScrobble, metrics.StatusSuccess).Inc()
+				slog.Info("Track submitted", append(trackedTrack.Track.SlogArgs(), "target", target.TargetType(), "instance", target.Name())...)
 			}
 		}
 	}

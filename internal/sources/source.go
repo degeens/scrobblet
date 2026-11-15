@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/degeens/scrobblet/internal/clients"
 	"github.com/degeens/scrobblet/internal/clients/spotify"
 	"github.com/degeens/scrobblet/internal/clients/wiim"
 	"github.com/degeens/scrobblet/internal/common"
@@ -29,18 +28,32 @@ type PlaybackState struct {
 	Timestamp time.Time
 }
 
-func New(sourceType SourceType, clientsConfig clients.Config) (any, Source, error) {
-	switch sourceType {
+// Spec describes how to construct a source. The config field matching Type
+// must be set.
+type Spec struct {
+	Type    SourceType
+	Spotify *spotify.Config
+	WiiM    *wiim.Config
+}
+
+func New(spec Spec) (any, Source, error) {
+	switch spec.Type {
 	case SourceSpotify:
-		client, err := spotify.NewClient(clientsConfig.Spotify.ClientID, clientsConfig.Spotify.ClientSecret, clientsConfig.Spotify.RedirectURL, clientsConfig.Spotify.DataPath)
+		if spec.Spotify == nil {
+			return nil, nil, fmt.Errorf("missing Spotify configuration for source type: %s", spec.Type)
+		}
+		client, err := spotify.NewClient(spec.Spotify.ClientID, spec.Spotify.ClientSecret, spec.Spotify.RedirectURL, spec.Spotify.DataPath)
 		if err != nil {
 			return nil, nil, err
 		}
 		return client, NewSpotifySource(client), nil
 	case SourceWiiM:
-		client := wiim.NewClient(clientsConfig.WiiM.BaseURL)
+		if spec.WiiM == nil {
+			return nil, nil, fmt.Errorf("missing WiiM configuration for source type: %s", spec.Type)
+		}
+		client := wiim.NewClient(spec.WiiM.BaseURL)
 		return client, NewWiiMSource(client), nil
 	default:
-		return nil, nil, fmt.Errorf("unknown source type: %s", sourceType)
+		return nil, nil, fmt.Errorf("unknown source type: %s", spec.Type)
 	}
 }

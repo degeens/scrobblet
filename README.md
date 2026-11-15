@@ -27,7 +27,22 @@ Currently, Scrobblet supports scrobbling from **Spotify** and **WiiM** to **Last
 
 ## Installation
 
-Here's a minimal Docker Compose file to get started with scrobbling from Spotify to CSV:
+Here's a minimal Docker Compose setup to get started with scrobbling from Spotify to CSV.
+
+Create `scrobblet.yaml`:
+
+```yaml
+source:
+  type: Spotify
+  clientId: ${SPOTIFY_CLIENT_ID}
+  clientSecret: ${SPOTIFY_CLIENT_SECRET}
+  redirectUrl: http://127.0.0.1:7276/api/spotify/callback
+
+targets:
+  - type: CSV
+```
+
+Create `docker-compose.yml`:
 
 ```yaml
 services:
@@ -36,20 +51,18 @@ services:
     image: degeens/scrobblet:latest
     volumes:
       - scrobblet-data:/etc/scrobblet
+      - ./scrobblet.yaml:/etc/scrobblet/scrobblet.yaml:ro
     ports:
       - 7276:7276
     environment:
-      - SCROBBLET_SOURCE=Spotify
-      - SCROBBLET_TARGETS=CSV
       - SPOTIFY_CLIENT_ID=your_spotify_client_id
       - SPOTIFY_CLIENT_SECRET=your_spotify_client_secret
-      - SPOTIFY_REDIRECT_URL=http://127.0.0.1:7276/api/spotify/callback
     restart: unless-stopped
 volumes:
   scrobblet-data:
 ```
 
-Set `SPOTIFY_CLIENT_ID`, `SPOTIFY_CLIENT_SECRET`, and `SPOTIFY_REDIRECT_URL` to your actual Spotify application credentials. See the [Spotify Configuration Guide](docs/configuration.md#spotify) for instructions on obtaining these.
+Set `SPOTIFY_CLIENT_ID` and `SPOTIFY_CLIENT_SECRET` to your actual Spotify application credentials. See the [Spotify Configuration Guide](docs/configuration.md#spotify) for instructions on obtaining these.
 
 For detailed installation instructions, see the [Installation Guide](docs/installation.md).
 

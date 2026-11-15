@@ -1,6 +1,7 @@
 package api
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/degeens/scrobblet/internal/api/handlers"
@@ -15,7 +16,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
-func NewHandler(source sources.Source, targets []targets.Target, sourceClient any, targetClients []any, cfg *config.Config, metrics *metrics.Metrics) http.Handler {
+func NewHandler(source sources.Source, targetInstances []targets.Instance, sourceClient any, cfg *config.Config, metrics *metrics.Metrics) http.Handler {
 	apiMux := http.NewServeMux()
 	authStateStore := utils.NewAuthStateStore()
 
@@ -25,14 +26,28 @@ func NewHandler(source sources.Source, targets []targets.Target, sourceClient an
 		apiMux.HandleFunc("GET /spotify/callback", handlers.SpotifyCallback(spotifyClient, authStateStore))
 	}
 
-	lastfmClient := getLastFmClient(targetClients)
-	if lastfmClient != nil {
-		apiMux.HandleFunc("GET /lastfm/login", handlers.LastFmLogin(lastfmClient))
-		apiMux.HandleFunc("GET /lastfm/callback", handlers.LastFmCallback(lastfmClient))
+	for _, instance := range targetInstances {
+		lastfmClient := getLastFmClient(instance)
+		if lastfmClient == nil {
+			continue
+		}
+
+		if instance.Name == lastfm.DefaultInstanceName {
+			apiMux.HandleFunc("GET /lastfm/login", handlers.LastFmLogin(lastfmClient))
+			apiMux.HandleFunc("GET /lastfm/callback", handlers.LastFmCallback(lastfmClient))
+		} else {
+			apiMux.HandleFunc(fmt.Sprintf("GET /lastfm/%s/login", instance.Name), handlers.LastFmLogin(lastfmClient))
+			apiMux.HandleFunc(fmt.Sprintf("GET /lastfm/%s/callback", instance.Name), handlers.LastFmCallback(lastfmClient))
+		}
+	}
+
+	targetList := make([]targets.Target, 0, len(targetInstances))
+	for _, instance := range targetInstances {
+		targetList = append(targetList, instance.Target)
 	}
 
 	rootMux := http.NewServeMux()
-	rootMux.Handle("GET /health", handlers.Health(source, targets))
+	rootMux.Handle("GET /health", handlers.Health(source, targetList))
 	rootMux.Handle("GET /metrics", promhttp.HandlerFor(metrics.Registry, promhttp.HandlerOpts{}))
 	rootMux.Handle("/api/", http.StripPrefix("/api", middleware.LogRequest(middleware.RateLimit(cfg.RateLimitRate, cfg.RateLimitBurst)(apiMux))))
 
@@ -45,14 +60,12 @@ func getSpotifyClient(sourceClient any) *spotify.Client {
 	return spotifyClient
 }
 
-func getLastFmClient(targetClients []any) *lastfm.Client {
-	var lastfmClient *lastfm.Client
-	for _, client := range targetClients {
-		if c, ok := client.(*lastfm.Client); ok {
-			lastfmClient = c
-			break
-		}
+func getLastFmClient(instance targets.Instance) *lastfm.Client {
+	if instance.Type != targets.TargetLastFm {
+		return nil
 	}
+
+	lastfmClient, _ := instance.Client.(*lastfm.Client)
 
 	return lastfmClient
 }

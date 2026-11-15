@@ -21,6 +21,7 @@ type SourceHealthCheck struct {
 
 type TargetHealthCheck struct {
 	TargetType      targets.TargetType
+	Name            string
 	Healthy         bool
 	LastHealthCheck time.Time
 }
@@ -58,7 +59,7 @@ func checkTargets(targets []targets.Target) ([]TargetHealthCheck, bool) {
 			allHealthy = false
 		}
 
-		healthCheck := TargetHealthCheck{TargetType: target.TargetType(), Healthy: healthy, LastHealthCheck: lastHealthCheck}
+		healthCheck := TargetHealthCheck{TargetType: target.TargetType(), Name: target.Name(), Healthy: healthy, LastHealthCheck: lastHealthCheck}
 
 		healthChecks = append(healthChecks, healthCheck)
 	}

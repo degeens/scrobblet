@@ -4,6 +4,18 @@
 # This configuration runs Scrobblet alongside a Koito instance.
 # Scrobblet is built locally and sends scrobbles to Koito.
 
+# Scrobblet is configured via ./scrobblet.yaml (mounted read-only); secrets
+# referenced with ${...} in that file come from .env.
+# Set "source" and the Koito target in scrobblet.yaml, e.g.:
+#
+#   source:
+#     type: WiiM
+#     url: https://192.168.0.100
+#   targets:
+#     - type: Koito
+#       url: http://koito:4110
+#       token: ${KOITO_TOKEN}
+
 # Access Scrobblet at http://localhost:7276
 # Access Koito at http://localhost:4110
 
@@ -15,11 +27,9 @@ services:
       dockerfile: Dockerfile
     volumes:
       - scrobblet-data:/etc/scrobblet
+      - ./scrobblet.yaml:/etc/scrobblet/scrobblet.yaml:ro
     ports:
       - 7276:7276
-    environment:
-      - SCROBBLET_SOURCE=Spotify
-      - SCROBBLET_TARGETS=Koito
     env_file:
       - .env
     depends_on:

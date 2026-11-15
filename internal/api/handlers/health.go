@@ -23,6 +23,7 @@ type HealthResponse struct {
 
 type ClientHealth struct {
 	Type      string    `json:"type"`
+	Name      string    `json:"name,omitempty"`
 	Status    string    `json:"status"`
 	Timestamp time.Time `json:"timestamp"`
 }
@@ -52,6 +53,7 @@ func toHealthResponse(h health.HealthCheck) HealthResponse {
 	for i, t := range h.Targets {
 		targets[i] = ClientHealth{
 			Type:      string(t.TargetType),
+			Name:      t.Name,
 			Status:    toHealthStatus(t.Healthy),
 			Timestamp: t.LastHealthCheck,
 		}

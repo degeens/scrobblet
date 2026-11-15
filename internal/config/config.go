@@ -1,7 +1,12 @@
 package config
 
 import (
-	"github.com/degeens/scrobblet/internal/clients"
+	"fmt"
+	"os"
+	"path/filepath"
+	"strconv"
+	"strings"
+
 	"github.com/degeens/scrobblet/internal/clients/csv"
 	"github.com/degeens/scrobblet/internal/clients/lastfm"
 	"github.com/degeens/scrobblet/internal/clients/listenbrainz"
@@ -9,246 +14,261 @@ import (
 	"github.com/degeens/scrobblet/internal/clients/wiim"
 	"github.com/degeens/scrobblet/internal/sources"
 	"github.com/degeens/scrobblet/internal/targets"
+	"gopkg.in/yaml.v3"
 )
 
 func LoadConfig() (*Config, error) {
-	port := getEnv(envPort, defaultPort)
-	dataPath := getEnv(envDataPath, defaultDataPath)
-	logLevel := getEnv(envLogLevel, defaultLogLevel)
+	configPath := os.Getenv(envConfig)
+	if configPath == "" {
+		configPath = filepath.Join(defaultDataPath, defaultConfigFileName)
+	}
 
-	rateLimitRate, err := getIntEnv(envRateLimitRate, defaultRateLimitRate)
+	raw, err := os.ReadFile(configPath)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read config file %q: %w", configPath, err)
+	}
+
+	// Expand ${ENV_VAR} references once, before parsing, so tokens can stay in
+	// environment variables or Docker secrets.
+	expanded := os.ExpandEnv(string(raw))
+
+	var file configFile
+	decoder := yaml.NewDecoder(strings.NewReader(expanded))
+	decoder.KnownFields(true)
+	if err := decoder.Decode(&file); err != nil {
+		return nil, fmt.Errorf("failed to parse config file %q: %w", configPath, err)
+	}
+
+	return toConfig(&file)
+}
+
+func toConfig(file *configFile) (*Config, error) {
+	port := defaultPort
+	if file.Port != nil {
+		port = *file.Port
+	}
+
+	dataPath := file.DataPath
+	if dataPath == "" {
+		dataPath = defaultDataPath
+	}
+
+	logLevel := file.LogLevel
+	if logLevel == "" {
+		logLevel = defaultLogLevel
+	}
+
+	rateLimitRate := defaultRateLimitRate
+	rateLimitBurst := defaultRateLimitBurst
+	if file.RateLimit != nil {
+		if file.RateLimit.Rate != nil {
+			rateLimitRate = *file.RateLimit.Rate
+		}
+		if file.RateLimit.Burst != nil {
+			rateLimitBurst = *file.RateLimit.Burst
+		}
+	}
+
+	source, err := toSourceSpec(file.Source, dataPath)
 	if err != nil {
 		return nil, err
 	}
 
-	rateLimitBurst, err := getIntEnv(envRateLimitBurst, defaultRateLimitBurst)
-	if err != nil {
-		return nil, err
-	}
-
-	source, err := getRequiredEnv(envSource)
-	if err != nil {
-		return nil, err
-	}
-
-	sourceType, err := validateSource(source)
-	if err != nil {
-		return nil, err
-	}
-
-	targets, err := getRequiredEnv(envTargets)
-	if err != nil {
-		return nil, err
-	}
-
-	targetTypes, err := validateTargets(targets)
-	if err != nil {
-		return nil, err
-	}
-
-	clientsConfig, err := loadClientsConfig(sourceType, targetTypes, dataPath)
+	targetSpecs, err := toTargetSpecs(file.Targets, dataPath)
 	if err != nil {
 		return nil, err
 	}
 
 	return &Config{
-		Port:           port,
+		Port:           strconv.Itoa(port),
 		DataPath:       dataPath,
 		LogLevel:       logLevel,
 		RateLimitRate:  rateLimitRate,
 		RateLimitBurst: rateLimitBurst,
-		Source:         sourceType,
-		Targets:        targetTypes,
-		Clients:        clientsConfig,
+		Source:         source,
+		Targets:        targetSpecs,
 	}, nil
+}
+
+func toSourceSpec(entry *sourceEntry, dataPath string) (sources.Spec, error) {
+	if entry == nil {
+		return sources.Spec{}, fmt.Errorf("source is required")
+	}
+
+	sourceType, err := validateSourceType(entry.Type)
+	if err != nil {
+		return sources.Spec{}, err
+	}
+
+	switch sourceType {
+	case sources.SourceSpotify:
+		opts := entry.Spotify
+		if opts.ClientID == "" {
+			return sources.Spec{}, fmt.Errorf("source (Spotify): clientId is required")
+		}
+		if opts.ClientSecret == "" {
+			return sources.Spec{}, fmt.Errorf("source (Spotify): clientSecret is required")
+		}
+		if opts.RedirectURL == "" {
+			return sources.Spec{}, fmt.Errorf("source (Spotify): redirectUrl is required")
+		}
+		if err := validateRedirectURL(opts.RedirectURL, spotifyCallbackPath); err != nil {
+			return sources.Spec{}, fmt.Errorf("source (Spotify): redirectUrl: %w", err)
+		}
+
+		return sources.Spec{
+			Type: sourceType,
+			Spotify: &spotify.Config{
+				ClientID:     opts.ClientID,
+				ClientSecret: opts.ClientSecret,
+				RedirectURL:  opts.RedirectURL,
+				DataPath:     dataPath,
+			},
+		}, nil
+	case sources.SourceWiiM:
+		opts := entry.WiiM
+		if opts.URL == "" {
+			return sources.Spec{}, fmt.Errorf("source (WiiM): url is required")
+		}
+		if err := validateWiiMURL(opts.URL); err != nil {
+			return sources.Spec{}, fmt.Errorf("source (WiiM): url: %w", err)
+		}
+
+		return sources.Spec{
+			Type: sourceType,
+			WiiM: &wiim.Config{BaseURL: opts.URL},
+		}, nil
+	default:
+		return sources.Spec{}, fmt.Errorf("unknown source type: %s", sourceType)
+	}
+}
+
+func toTargetSpecs(entries []targetEntry, dataPath string) ([]targets.Spec, error) {
+	if len(entries) == 0 {
+		return nil, fmt.Errorf("at least one target is required")
+	}
+
+	specs := make([]targets.Spec, 0, len(entries))
+	seen := make(map[string]int)
+	csvFilePaths := make(map[string]int)
+
+	for i, entry := range entries {
+		spec, csvFilePath, err := toTargetSpec(entry, i, dataPath)
+		if err != nil {
+			return nil, err
+		}
+
+		key := string(spec.Type) + "/" + spec.Name
+		if j, ok := seen[key]; ok {
+			return nil, fmt.Errorf("targets[%d] (%s %q): duplicate target, already defined at targets[%d]. Targets of the same type must have a unique name", i, spec.Type, spec.Name, j)
+		}
+		seen[key] = i
+
+		if csvFilePath != "" {
+			if j, ok := csvFilePaths[csvFilePath]; ok {
+				return nil, fmt.Errorf("targets[%d] (%s %q): filePath %q conflicts with targets[%d]. CSV targets must write to different files", i, spec.Type, spec.Name, csvFilePath, j)
+			}
+			csvFilePaths[csvFilePath] = i
+		}
+
+		specs = append(specs, spec)
+	}
+
+	return specs, nil
 }
 
 //gocyclo:ignore
-func loadClientsConfig(sourceType sources.SourceType, targetTypes []targets.TargetType, dataPath string) (clients.Config, error) {
-	var spotifyConfig spotify.Config
-	var wiimConfig wiim.Config
-	var koitoConfig listenbrainz.Config
-	var malojaConfig listenbrainz.Config
-	var listenBrainzConfig listenbrainz.Config
-	var lastfmConfig lastfm.Config
-	var csvConfig csv.Config
-	var err error
-
-	if sourceType == sources.SourceSpotify {
-		spotifyConfig, err = loadSpotifyConfig(dataPath)
-		if err != nil {
-			return clients.Config{}, err
-		}
-	}
-	if sourceType == sources.SourceWiiM {
-		wiimConfig, err = loadWiiMConfig()
-		if err != nil {
-			return clients.Config{}, err
-		}
-	}
-
-	for _, targetType := range targetTypes {
-		switch targetType {
-		case targets.TargetKoito:
-			koitoConfig, err = loadListenBrainzConfig(targetType)
-			if err != nil {
-				return clients.Config{}, err
-			}
-		case targets.TargetMaloja:
-			malojaConfig, err = loadListenBrainzConfig(targetType)
-			if err != nil {
-				return clients.Config{}, err
-			}
-		case targets.TargetListenBrainz:
-			listenBrainzConfig, err = loadListenBrainzConfig(targetType)
-			if err != nil {
-				return clients.Config{}, err
-			}
-		case targets.TargetLastFm:
-			lastfmConfig, err = loadLastFmConfig(dataPath)
-			if err != nil {
-				return clients.Config{}, err
-			}
-		case targets.TargetCSV:
-			csvConfig, err = loadCSVConfig(dataPath)
-			if err != nil {
-				return clients.Config{}, err
-			}
-		}
-	}
-
-	return clients.Config{
-		Spotify:      spotifyConfig,
-		WiiM:         wiimConfig,
-		Koito:        koitoConfig,
-		Maloja:       malojaConfig,
-		ListenBrainz: listenBrainzConfig,
-		LastFm:       lastfmConfig,
-		CSV:          csvConfig,
-	}, nil
-}
-
-func loadSpotifyConfig(dataPath string) (spotify.Config, error) {
-	clientID, err := getRequiredEnv(envSpotifyClientID)
+func toTargetSpec(entry targetEntry, index int, dataPath string) (targets.Spec, string, error) {
+	targetType, err := validateTargetType(entry.Type)
 	if err != nil {
-		return spotify.Config{}, err
+		return targets.Spec{}, "", fmt.Errorf("targets[%d]: %w", index, err)
 	}
 
-	clientSecret, err := getRequiredEnv(envSpotifyClientSecret)
-	if err != nil {
-		return spotify.Config{}, err
+	name := entry.Name
+	if name == "" {
+		name = defaultTargetName(targetType)
 	}
 
-	redirectURL, err := getRequiredEnv(envSpotifyRedirectURL)
-	if err != nil {
-		return spotify.Config{}, err
+	if err := validateTargetName(name); err != nil {
+		return targets.Spec{}, "", fmt.Errorf("targets[%d] (%s): %w", index, targetType, err)
 	}
 
-	err = validateRedirectURL(redirectURL, "/api/spotify/callback")
-	if err != nil {
-		return spotify.Config{}, err
+	describe := func() string {
+		return fmt.Sprintf("targets[%d] (%s %q)", index, targetType, name)
 	}
 
-	return spotify.Config{
-		ClientID:     clientID,
-		ClientSecret: clientSecret,
-		RedirectURL:  redirectURL,
-		DataPath:     dataPath,
-	}, nil
-}
-
-func loadWiiMConfig() (wiim.Config, error) {
-	baseURL, err := getRequiredEnv(envWiiMURL)
-	if err != nil {
-		return wiim.Config{}, err
-	}
-
-	err = validateWiiMURL(baseURL)
-	if err != nil {
-		return wiim.Config{}, err
-	}
-
-	return wiim.Config{BaseURL: baseURL}, nil
-}
-
-func loadListenBrainzConfig(targetType targets.TargetType) (listenbrainz.Config, error) {
-	var token, baseURL string
-	var err error
+	spec := targets.Spec{Type: targetType, Name: name}
+	csvFilePath := ""
 
 	switch targetType {
-	case targets.TargetKoito:
-		token, err = getRequiredEnv(envKoitoToken)
-		if err != nil {
-			return listenbrainz.Config{}, err
+	case targets.TargetListenBrainz, targets.TargetMaloja, targets.TargetKoito:
+		opts := entry.ListenBrainz
+		if opts.Token == "" {
+			return targets.Spec{}, "", fmt.Errorf("%s: token is required", describe())
 		}
-		baseURL, err = getRequiredEnv(envKoitoURL)
-		if err != nil {
-			return listenbrainz.Config{}, err
+
+		baseURL := opts.URL
+		switch targetType {
+		case targets.TargetListenBrainz:
+			if baseURL == "" {
+				baseURL = defaultListenBrainzURL
+			}
+		case targets.TargetMaloja, targets.TargetKoito:
+			// Koito and Maloja are ListenBrainz-compatible services with a fixed API path
+			if baseURL == "" {
+				return targets.Spec{}, "", fmt.Errorf("%s: url is required", describe())
+			}
+			baseURL, err = setURLPath(baseURL, listenBrainzAPIPath)
+			if err != nil {
+				return targets.Spec{}, "", fmt.Errorf("%s: url: %w", describe(), err)
+			}
 		}
-		baseURL, err = setURLPath(baseURL, "/apis/listenbrainz")
-		if err != nil {
-			return listenbrainz.Config{}, err
+
+		spec.ListenBrainz = &listenbrainz.Config{URL: baseURL, Token: opts.Token}
+	case targets.TargetLastFm:
+		opts := entry.LastFm
+		if opts.APIKey == "" {
+			return targets.Spec{}, "", fmt.Errorf("%s: apiKey is required", describe())
 		}
-	case targets.TargetMaloja:
-		token, err = getRequiredEnv(envMalojaToken)
-		if err != nil {
-			return listenbrainz.Config{}, err
+		if opts.SharedSecret == "" {
+			return targets.Spec{}, "", fmt.Errorf("%s: sharedSecret is required", describe())
 		}
-		baseURL, err = getRequiredEnv(envMalojaURL)
-		if err != nil {
-			return listenbrainz.Config{}, err
+		if opts.RedirectURL == "" {
+			return targets.Spec{}, "", fmt.Errorf("%s: redirectUrl is required", describe())
 		}
-		baseURL, err = setURLPath(baseURL, "/apis/listenbrainz")
-		if err != nil {
-			return listenbrainz.Config{}, err
+
+		callbackPath := lastFmCallbackPath
+		if name != lastfm.DefaultInstanceName {
+			callbackPath = fmt.Sprintf(lastFmNamedCallbackTmpl, name)
 		}
-	default:
-		token, err = getRequiredEnv(envListenBrainzToken)
-		if err != nil {
-			return listenbrainz.Config{}, err
+		if err := validateRedirectURL(opts.RedirectURL, callbackPath); err != nil {
+			return targets.Spec{}, "", fmt.Errorf("%s: redirectUrl: %w", describe(), err)
 		}
-		baseURL = getEnv(envListenBrainzURL, "")
+
+		spec.LastFm = &lastfm.Config{
+			APIKey:       opts.APIKey,
+			SharedSecret: opts.SharedSecret,
+			RedirectURL:  opts.RedirectURL,
+			DataPath:     dataPath,
+		}
+	case targets.TargetCSV:
+		opts := entry.CSV
+		filePath := opts.FilePath
+		if filePath == "" {
+			fileName := defaultCSVFileName
+			if name != defaultTargetName(targets.TargetCSV) {
+				fileName = fmt.Sprintf(namedCSVFileNameTemplate, name)
+			}
+			filePath = filepath.Join(dataPath, fileName)
+		}
+
+		csvFilePath = filePath
+		spec.CSV = &csv.Config{FilePath: filePath}
 	}
 
-	return listenbrainz.Config{
-		URL:   baseURL,
-		Token: token,
-	}, nil
+	return spec, csvFilePath, nil
 }
 
-func loadLastFmConfig(dataPath string) (lastfm.Config, error) {
-	apiKey, err := getRequiredEnv(envLastFmAPIKey)
-	if err != nil {
-		return lastfm.Config{}, err
-	}
-
-	sharedSecret, err := getRequiredEnv(envLastFmSharedSecret)
-	if err != nil {
-		return lastfm.Config{}, err
-	}
-
-	redirectURL, err := getRequiredEnv(envLastFmRedirectURL)
-	if err != nil {
-		return lastfm.Config{}, err
-	}
-
-	err = validateRedirectURL(redirectURL, "/api/lastfm/callback")
-	if err != nil {
-		return lastfm.Config{}, err
-	}
-
-	return lastfm.Config{
-		APIKey:       apiKey,
-		SharedSecret: sharedSecret,
-		RedirectURL:  redirectURL,
-		DataPath:     dataPath,
-	}, nil
-}
-
-func loadCSVConfig(dataPath string) (csv.Config, error) {
-	filePath := getEnv(envCSVFilePath, dataPath+"/scrobbles.csv")
-
-	return csv.Config{
-		FilePath: filePath,
-	}, nil
+func defaultTargetName(targetType targets.TargetType) string {
+	return strings.ToLower(string(targetType))
 }

@@ -26,28 +26,33 @@ func main() {
 
 	slog.Info("Starting Scrobblet", "version", version)
 
-	sourceClient, source, err := sources.New(cfg.Source, cfg.Clients)
+	sourceClient, source, err := sources.New(cfg.Source)
 	if err != nil {
 		slog.Error(err.Error())
 		os.Exit(1)
 	}
 
-	targetClients, targets, err := targets.NewMultiple(cfg.Targets, cfg.Clients, version)
+	targetInstances, err := targets.NewMultiple(cfg.Targets, version)
 	if err != nil {
 		slog.Error(err.Error())
 		os.Exit(1)
+	}
+
+	targetList := make([]targets.Target, 0, len(targetInstances))
+	for _, instance := range targetInstances {
+		targetList = append(targetList, instance.Target)
 	}
 
 	metrics := metrics.New()
 	metrics.BuildInfo.WithLabelValues(version).Set(1)
 
-	scrobbler := scrobbler.NewScrobbler(source, targets, metrics)
+	scrobbler := scrobbler.NewScrobbler(source, targetList, metrics)
 
 	go scrobbler.Start()
 	slog.Info("Scrobbler started")
 
 	slog.Info("Listening on port :" + cfg.Port)
-	err = http.ListenAndServe(":"+cfg.Port, api.NewHandler(source, targets, sourceClient, targetClients, cfg, metrics))
+	err = http.ListenAndServe(":"+cfg.Port, api.NewHandler(source, targetInstances, sourceClient, cfg, metrics))
 	if err != nil {
 		slog.Error(err.Error())
 		os.Exit(1)

@@ -34,10 +34,10 @@ func New() *Metrics {
 	buildInfo := promauto.With(reg).NewGaugeVec(prometheus.GaugeOpts{Name: "scrobblet_build_info", Help: "Build information."}, []string{"version"})
 	pollingInterval := promauto.With(reg).NewGauge(prometheus.GaugeOpts{Name: "scrobblet_polling_interval_seconds", Help: "Current polling interval (in seconds)."})
 	polls := promauto.With(reg).NewCounterVec(prometheus.CounterOpts{Name: "scrobblet_polls_total", Help: "Total number of polls."}, []string{"source", "status"})
-	submits := promauto.With(reg).NewCounterVec(prometheus.CounterOpts{Name: "scrobblet_submits_total", Help: "Total number of submits."}, []string{"target", "kind", "status"})
+	submits := promauto.With(reg).NewCounterVec(prometheus.CounterOpts{Name: "scrobblet_submits_total", Help: "Total number of submits."}, []string{"target", "instance", "kind", "status"})
 	scrobbleEvaluations := promauto.With(reg).NewCounterVec(prometheus.CounterOpts{Name: "scrobblet_scrobble_evaluations_total", Help: "Total number of scrobble evaluations."}, []string{"result"})
 	pollDuration := promauto.With(reg).NewHistogramVec(prometheus.HistogramOpts{Name: "scrobblet_poll_duration_seconds", Help: "Duration (in seconds) of polls.", Buckets: prometheus.DefBuckets}, []string{"source"})
-	submitDuration := promauto.With(reg).NewHistogramVec(prometheus.HistogramOpts{Name: "scrobblet_submit_duration_seconds", Help: "Duration (in seconds) of submits.", Buckets: prometheus.DefBuckets}, []string{"target", "kind"})
+	submitDuration := promauto.With(reg).NewHistogramVec(prometheus.HistogramOpts{Name: "scrobblet_submit_duration_seconds", Help: "Duration (in seconds) of submits.", Buckets: prometheus.DefBuckets}, []string{"target", "instance", "kind"})
 
 	return &Metrics{
 		Registry:            reg,

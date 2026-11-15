@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/degeens/scrobblet/internal/clients"
 	"github.com/degeens/scrobblet/internal/clients/csv"
 	"github.com/degeens/scrobblet/internal/clients/lastfm"
 	"github.com/degeens/scrobblet/internal/clients/listenbrainz"
@@ -23,51 +22,85 @@ const (
 
 type Target interface {
 	Healthy() (bool, time.Time)
+	Name() string
 	TargetType() TargetType
 	SubmitPlayingTrack(track *common.Track) error
 	SubmitPlayedTrack(trackedTrack *common.TrackedTrack) error
 }
 
-func New(targetType TargetType, clientsConfig clients.Config, scrobbletVersion string) (any, Target, error) {
-	switch targetType {
-	case TargetKoito:
-		// Koito uses ListenBrainz-compatible API with custom base URL
-		client := listenbrainz.NewClient(clientsConfig.Koito.Token, clientsConfig.Koito.URL)
-		return client, NewListenBrainzTarget(TargetKoito, client, scrobbletVersion), nil
-	case TargetMaloja:
-		// Maloja uses ListenBrainz-compatible API with custom base URL
-		client := listenbrainz.NewClient(clientsConfig.Maloja.Token, clientsConfig.Maloja.URL)
-		return client, NewListenBrainzTarget(TargetMaloja, client, scrobbletVersion), nil
-	case TargetListenBrainz:
-		client := listenbrainz.NewClient(clientsConfig.ListenBrainz.Token, clientsConfig.ListenBrainz.URL)
-		return client, NewListenBrainzTarget(TargetListenBrainz, client, scrobbletVersion), nil
-	case TargetLastFm:
-		client, err := lastfm.NewClient(clientsConfig.LastFm.APIKey, clientsConfig.LastFm.SharedSecret, clientsConfig.LastFm.RedirectURL, clientsConfig.LastFm.DataPath, scrobbletVersion)
-		if err != nil {
-			return nil, nil, err
+// Spec describes how to construct a target instance. The config field
+// matching Type must be set.
+type Spec struct {
+	Type         TargetType
+	Name         string
+	ListenBrainz *listenbrainz.Config
+	LastFm       *lastfm.Config
+	CSV          *csv.Config
+}
+
+// Instance is a constructed target together with its identity and client.
+type Instance struct {
+	Name   string
+	Type   TargetType
+	Client any
+	Target Target
+}
+
+func New(spec Spec, scrobbletVersion string) (Instance, error) {
+	switch spec.Type {
+	case TargetKoito, TargetMaloja, TargetListenBrainz:
+		// Koito and Maloja use the ListenBrainz-compatible API with a custom base URL
+		if spec.ListenBrainz == nil {
+			return Instance{}, fmt.Errorf("missing ListenBrainz configuration for target type: %s", spec.Type)
 		}
-		return client, NewLastFmTarget(client), nil
+		client := listenbrainz.NewClient(spec.ListenBrainz.Token, spec.ListenBrainz.URL)
+		return Instance{
+			Name:   spec.Name,
+			Type:   spec.Type,
+			Client: client,
+			Target: NewListenBrainzTarget(spec.Type, spec.Name, client, scrobbletVersion),
+		}, nil
+	case TargetLastFm:
+		if spec.LastFm == nil {
+			return Instance{}, fmt.Errorf("missing Last.fm configuration for target type: %s", spec.Type)
+		}
+		client, err := lastfm.NewClient(spec.Name, spec.LastFm.APIKey, spec.LastFm.SharedSecret, spec.LastFm.RedirectURL, spec.LastFm.DataPath, scrobbletVersion)
+		if err != nil {
+			return Instance{}, err
+		}
+		return Instance{
+			Name:   spec.Name,
+			Type:   spec.Type,
+			Client: client,
+			Target: NewLastFmTarget(spec.Name, client),
+		}, nil
 	case TargetCSV:
-		client := csv.NewClient(clientsConfig.CSV.FilePath)
-		return client, NewCSVTarget(client), nil
+		if spec.CSV == nil {
+			return Instance{}, fmt.Errorf("missing CSV configuration for target type: %s", spec.Type)
+		}
+		client := csv.NewClient(spec.CSV.FilePath)
+		return Instance{
+			Name:   spec.Name,
+			Type:   spec.Type,
+			Client: client,
+			Target: NewCSVTarget(spec.Name, client),
+		}, nil
 	default:
-		return nil, nil, fmt.Errorf("unknown target type: %s", targetType)
+		return Instance{}, fmt.Errorf("unknown target type: %s", spec.Type)
 	}
 }
 
-func NewMultiple(targetTypes []TargetType, clientsConfig clients.Config, scrobbletVersion string) ([]any, []Target, error) {
-	clients := make([]any, 0, len(targetTypes))
-	targets := make([]Target, 0, len(targetTypes))
+func NewMultiple(specs []Spec, scrobbletVersion string) ([]Instance, error) {
+	instances := make([]Instance, 0, len(specs))
 
-	for _, targetType := range targetTypes {
-		client, target, err := New(targetType, clientsConfig, scrobbletVersion)
+	for _, spec := range specs {
+		instance, err := New(spec, scrobbletVersion)
 		if err != nil {
-			return nil, nil, err
+			return nil, err
 		}
 
-		clients = append(clients, client)
-		targets = append(targets, target)
+		instances = append(instances, instance)
 	}
 
-	return clients, targets, nil
+	return instances, nil
 }

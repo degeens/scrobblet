@@ -4,18 +4,19 @@ import (
 	"fmt"
 	"net/netip"
 	"net/url"
+	"regexp"
 	"strings"
 
 	"github.com/degeens/scrobblet/internal/sources"
 	"github.com/degeens/scrobblet/internal/targets"
 )
 
-func validateSource(source string) (sources.SourceType, error) {
-	source = strings.TrimSpace(source)
+// Target names are used in URL paths (Last.fm auth routes) and file names
+// (session and CSV files), so they are restricted to a safe charset.
+var targetNamePattern = regexp.MustCompile(`^[a-z0-9][a-z0-9-]*$`)
 
-	if strings.Contains(source, ",") {
-		return "", fmt.Errorf("only one source is allowed")
-	}
+func validateSourceType(source string) (sources.SourceType, error) {
+	source = strings.TrimSpace(source)
 
 	switch strings.ToLower(source) {
 	case strings.ToLower(string(sources.SourceSpotify)):
@@ -23,33 +24,11 @@ func validateSource(source string) (sources.SourceType, error) {
 	case strings.ToLower(string(sources.SourceWiiM)):
 		return sources.SourceWiiM, nil
 	default:
-		return "", fmt.Errorf("invalid source: %s. Valid sources are: %s, %s", source, sources.SourceSpotify, sources.SourceWiiM)
+		return "", fmt.Errorf("invalid source type: %s. Valid source types are: %s, %s", source, sources.SourceSpotify, sources.SourceWiiM)
 	}
 }
 
-func validateTargets(targetsString string) ([]targets.TargetType, error) {
-	targetStrings := strings.Split(targetsString, ",")
-	targetTypes := make([]targets.TargetType, 0, len(targetStrings))
-	seen := make(map[targets.TargetType]bool)
-
-	for _, targetString := range targetStrings {
-		targetType, err := validateTarget(targetString)
-		if err != nil {
-			return nil, err
-		}
-
-		if seen[targetType] {
-			return nil, fmt.Errorf("duplicate target type: %s. Multiple targets of the same type are not supported", targetType)
-		}
-		seen[targetType] = true
-
-		targetTypes = append(targetTypes, targetType)
-	}
-
-	return targetTypes, nil
-}
-
-func validateTarget(target string) (targets.TargetType, error) {
+func validateTargetType(target string) (targets.TargetType, error) {
 	switch strings.ToLower(strings.TrimSpace(target)) {
 	case strings.ToLower(string(targets.TargetKoito)):
 		return targets.TargetKoito, nil
@@ -62,8 +41,16 @@ func validateTarget(target string) (targets.TargetType, error) {
 	case strings.ToLower(string(targets.TargetCSV)):
 		return targets.TargetCSV, nil
 	default:
-		return "", fmt.Errorf("invalid target: %s. Valid targets are: %s, %s, %s, %s, %s", target, targets.TargetKoito, targets.TargetMaloja, targets.TargetListenBrainz, targets.TargetLastFm, targets.TargetCSV)
+		return "", fmt.Errorf("invalid target type: %s. Valid target types are: %s, %s, %s, %s, %s", target, targets.TargetKoito, targets.TargetMaloja, targets.TargetListenBrainz, targets.TargetLastFm, targets.TargetCSV)
 	}
+}
+
+func validateTargetName(name string) error {
+	if !targetNamePattern.MatchString(name) {
+		return fmt.Errorf("invalid name: %q. Name must start with a lowercase letter or digit and may only contain lowercase letters, digits and dashes", name)
+	}
+
+	return nil
 }
 
 func validateRedirectURL(redirectURL, validPath string) error {

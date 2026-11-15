@@ -11,14 +11,16 @@ import (
 
 type ListenBrainzTarget struct {
 	health           *common.HealthStatus
+	name             string
 	targetType       TargetType
 	client           *listenbrainz.Client
 	scrobbletVersion string
 }
 
-func NewListenBrainzTarget(targetType TargetType, client *listenbrainz.Client, scrobbletVersion string) *ListenBrainzTarget {
+func NewListenBrainzTarget(targetType TargetType, name string, client *listenbrainz.Client, scrobbletVersion string) *ListenBrainzTarget {
 	return &ListenBrainzTarget{
 		health:           common.NewHealthStatus(),
+		name:             name,
 		targetType:       targetType,
 		client:           client,
 		scrobbletVersion: scrobbletVersion,
@@ -27,6 +29,10 @@ func NewListenBrainzTarget(targetType TargetType, client *listenbrainz.Client, s
 
 func (t *ListenBrainzTarget) Healthy() (bool, time.Time) {
 	return t.health.Get()
+}
+
+func (t *ListenBrainzTarget) Name() string {
+	return t.name
 }
 
 func (t *ListenBrainzTarget) TargetType() TargetType {

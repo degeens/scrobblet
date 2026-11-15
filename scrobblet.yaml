@@ -1,0 +1,57 @@
+# Scrobblet configuration
+#
+# Secrets are referenced with ${ENV_VAR} and expanded from the environment
+# (e.g. the .env file when using the dev Compose files), so this file never
+# contains credentials. Restart Scrobblet to apply changes.
+
+# port: 7276                    # optional, default 7276
+# dataPath: /etc/scrobblet      # optional, default /etc/scrobblet
+# logLevel: INFO                # optional, DEBUG|INFO|WARN|ERROR, default INFO
+# rateLimit:                    # optional
+#   rate: 10                    #   default 10
+#   burst: 100                  #   default 100
+
+source:
+  type: Spotify               # Spotify | WiiM
+  clientId: ${SPOTIFY_CLIENT_ID}
+  clientSecret: ${SPOTIFY_CLIENT_SECRET}
+  redirectUrl: http://127.0.0.1:7276/api/spotify/callback
+
+# source:
+#   type: WiiM
+#   url: https://192.168.0.100
+
+targets:
+  - type: CSV
+
+  # Every target has an optional name (default: the lowercase type). Multiple
+  # targets of the same type are allowed as long as their names differ.
+  # - type: CSV
+  #   name: archive             # writes to <dataPath>/scrobbles-archive.csv
+
+  # - type: ListenBrainz        # name defaults to "listenbrainz"
+  #   token: ${LISTENBRAINZ_TOKEN}
+
+  # - type: ListenBrainz
+  #   name: work                # second instance of the same type
+  #   url: https://listenbrainz.example.com
+  #   token: ${LISTENBRAINZ_WORK_TOKEN}
+
+  # - type: Maloja
+  #   url: http://maloja:42010
+  #   token: ${MALOJA_TOKEN}
+
+  # - type: Koito
+  #   url: http://koito:4110
+  #   token: ${KOITO_TOKEN}
+
+  # - type: LastFm              # log in via /api/lastfm/login
+  #   apiKey: ${LASTFM_API_KEY}
+  #   sharedSecret: ${LASTFM_SHARED_SECRET}
+  #   redirectUrl: http://127.0.0.1:7276/api/lastfm/callback
+
+  # - type: LastFm              # log in via /api/lastfm/second-account/login
+  #   name: second-account
+  #   apiKey: ${LASTFM_2_API_KEY}
+  #   sharedSecret: ${LASTFM_2_SHARED_SECRET}
+  #   redirectUrl: http://127.0.0.1:7276/api/lastfm/second-account/callback
